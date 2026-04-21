@@ -6,33 +6,53 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: lb://auth-service
+          uri: lb://AUTH-SERVICE
           predicates:
             - Path=/api/auth/**
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**
+          filters:
+            - JwtAuthFilter
+
         - id: room-service
           uri: lb://room-service
           predicates:
             - Path=/api/rooms/**
+          filters:
+            - JwtAuthFilter
+
         - id: message-service
           uri: lb://message-service
           predicates:
             - Path=/api/messages/**
+          filters:
+            - JwtAuthFilter
+
         - id: media-service
           uri: lb://media-service
           predicates:
             - Path=/api/media/**
+          filters:
+            - JwtAuthFilter
+
         - id: presence-service
           uri: lb://presence-service
           predicates:
             - Path=/api/presence/**
+          filters:
+            - JwtAuthFilter
+
         - id: notification-service
           uri: lb://notification-service
           predicates:
             - Path=/api/notifications/**
+          filters:
+            - JwtAuthFilter
+
+        - id: chat-service
+          uri: lb://chat-service
+          predicates:
+            - Path=/ws/**
+          filters:
+            - JwtAuthFilter
 
 eureka:
   client:
