@@ -26,19 +26,52 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String email = jwtUtil.extractEmail(token);
-                userRepository.findByEmail(email).ifPresent(user -> {
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(email, null, List.of());
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                });
-            }
+    
+        String path = request.getRequestURI();
+    
+        if (path.startsWith("/api/auth/login") ||
+            path.startsWith("/api/auth/register") ||
+            path.startsWith("/api/auth/validate")) {
+            filterChain.doFilter(request, response);
+            return;
         }
+    
+        String header = request.getHeader("Authorization");
+    
+        if (header == null || !header.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                    "status": 401,
+                    "message": "Missing token"
+                }
+            """);
+            return;
+        }
+    
+        String token = header.substring(7);
+    
+        if (!jwtUtil.validateToken(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+                {
+                    "status": 401,
+                    "message": "Invalid token"
+                }
+            """);
+            return;
+        }
+    
+        String email = jwtUtil.extractEmail(token);
+    
+        userRepository.findByEmail(email).ifPresent(user -> {
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(email, null, List.of());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        });
+    
         filterChain.doFilter(request, response);
     }
 }

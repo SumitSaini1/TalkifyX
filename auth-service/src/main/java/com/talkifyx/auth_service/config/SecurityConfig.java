@@ -26,6 +26,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
@@ -42,6 +44,18 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> oauth2
                 .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
                 .successHandler(oAuth2SuccessHandler)
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((req, res, e) -> {
+                    res.setStatus(401);
+                    res.setContentType("application/json");
+                    res.getWriter().write("""
+                        {
+                            "status": 401,
+                            "message": "Unauthorized"
+                        }
+                    """);
+                })
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
