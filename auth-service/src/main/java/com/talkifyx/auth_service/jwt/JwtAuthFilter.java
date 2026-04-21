@@ -23,55 +23,61 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
-    
+
         String path = request.getRequestURI();
-    
+
         if (path.startsWith("/api/auth/login") ||
-            path.startsWith("/api/auth/register") ||
-            path.startsWith("/api/auth/validate")) {
+                path.startsWith("/api/auth/register") ||
+                path.startsWith("/api/auth/validate") ||
+
+                path.startsWith("/v3/api-docs") ||
+                path.contains("/swagger-ui") ||
+                path.contains("/v3/api-docs") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/swagger-ui.html")) {
+
             filterChain.doFilter(request, response);
             return;
         }
-    
+
         String header = request.getHeader("Authorization");
-    
+
         if (header == null || !header.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("""
-                {
-                    "status": 401,
-                    "message": "Missing token"
-                }
-            """);
+                        {
+                            "status": 401,
+                            "message": "Missing token"
+                        }
+                    """);
             return;
         }
-    
+
         String token = header.substring(7);
-    
+
         if (!jwtUtil.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("""
-                {
-                    "status": 401,
-                    "message": "Invalid token"
-                }
-            """);
+                        {
+                            "status": 401,
+                            "message": "Invalid token"
+                        }
+                    """);
             return;
         }
-    
+
         String email = jwtUtil.extractEmail(token);
-    
+
         userRepository.findByEmail(email).ifPresent(user -> {
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(email, null, List.of());
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null, List.of());
             SecurityContextHolder.getContext().setAuthentication(auth);
         });
-    
+
         filterChain.doFilter(request, response);
     }
 }

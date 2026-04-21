@@ -11,6 +11,14 @@ spring:
             - Path=/api/auth/**
           filters:
             - JwtAuthFilter
+        - id: auth-oauth
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/oauth2/**, /login/**
+        - id: auth-swagger
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/swagger-ui/**, /v3/api-docs/**
 
         - id: room-service
           uri: lb://room-service

@@ -85,6 +85,8 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                path.startsWith("/api/auth/validate") ||
                path.startsWith("/oauth2/") ||
                path.startsWith("/swagger-ui") ||
+               path.contains("/swagger-ui") ||
+                path.contains("/v3/api-docs") ||
                path.startsWith("/v3/api-docs");
     }
 
@@ -93,11 +95,11 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
         exchange.getResponse().getHeaders().add("Content-Type", "application/json");
 
         String body = """
-            {
-                "status": 401,
-                "message": "Invalid or missing token"
-            }
-            """;
+                {
+                    "status": 401,
+                    "message": "Invalid or missing token"
+                }
+                """;
 
         byte[] bytes = body.getBytes();
         var buffer = exchange.getResponse().bufferFactory().wrap(bytes);
@@ -105,5 +107,6 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
         return exchange.getResponse().writeWith(Mono.just(buffer));
     }
 
-    public static class Config {}
+    public static class Config {
+    }
 }
