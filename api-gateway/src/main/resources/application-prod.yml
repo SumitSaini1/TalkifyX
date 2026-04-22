@@ -37,7 +37,7 @@ spring:
             - JwtAuthFilter
 
         - id: media-service
-          uri: lb://media-service
+          uri: lb://MEDIA-SERVICE
           predicates:
             - Path=/api/media/**
           filters:

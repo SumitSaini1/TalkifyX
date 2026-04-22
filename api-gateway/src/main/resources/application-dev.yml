@@ -33,14 +33,14 @@ spring:
             - JwtAuthFilter
 
         - id: message-service
-          uri: lb://message-service
+          uri: lb://MESSAGE-SERVICE
           predicates:
             - Path=/api/messages/**
           filters:
             - JwtAuthFilter
 
         - id: media-service
-          uri: lb://media-service
+          uri: lb://MEDIA-SERVICE
           predicates:
             - Path=/api/media/**
           filters:
