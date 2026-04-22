@@ -30,7 +30,7 @@ spring:
             - JwtAuthFilter
 
         - id: message-service
-          uri: lb://message-service
+          uri: lb://MESSAGE-SERVICE
           predicates:
             - Path=/api/messages/**
           filters:
