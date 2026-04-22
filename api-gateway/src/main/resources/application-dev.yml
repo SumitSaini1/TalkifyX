@@ -47,7 +47,7 @@ spring:
             - JwtAuthFilter
 
         - id: presence-service
-          uri: lb://presence-service
+          uri: lb://PRESENCE-SERVICE
           predicates:
             - Path=/api/presence/**
           filters:
@@ -105,8 +105,16 @@ springdoc:
     urls:
       - name: auth-service
         url: /api/auth/v3/api-docs
-      - name: user-service
-        url: /api/users/v3/api-docs
+      - name: room-service
+        url: /api/rooms/v3/api-docs
+      - name: message-service
+        url: /api/messages/v3/api-docs
+      - name: presence-service
+        url: /api/presence/v3/api-docs
+      - name: media-service
+        url: /api/media/v3/api-docs
+      - name: notification-service
+        url: /api/notifications/v3/api-docs
 
 logging:
   level:
