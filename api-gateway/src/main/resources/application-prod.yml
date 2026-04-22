@@ -58,11 +58,13 @@ spring:
             - JwtAuthFilter
 
         - id: chat-service
-          uri: lb://chat-service
+          uri: lb://CHAT-SERVICE
           predicates:
             - Path=/ws/**
-          filters:
-            - JwtAuthFilter
+          
+          metadata:
+            response-timeout: 0
+            connect-timeout: 0
 
       
       globalcors:

@@ -4,6 +4,9 @@ server:
 spring:
   cloud:
     gateway:
+      httpclient:
+        websocket:
+          max-frame-payload-length: 65536
       routes:
         - id: auth-service
           uri: lb://AUTH-SERVICE
@@ -58,11 +61,13 @@ spring:
             - JwtAuthFilter
 
         - id: chat-service
-          uri: lb://chat-service
+          uri: lb:ws://CHAT-SERVICE
           predicates:
             - Path=/ws/**
-          filters:
-            - JwtAuthFilter
+          
+          metadata:
+            response-timeout: 0
+            connect-timeout: 0
 
       
       globalcors:
@@ -90,8 +95,8 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
   instance:
-    prefer-ip-address: false
-    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true
+    # instance-id: ${spring.application.name}:${server.port}
 
 springdoc:
   swagger-ui:

@@ -32,7 +32,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        Long userId = getUserIdFromSession(session);
+        Long userId = (Long) session.getAttributes().get("userId");
         if (userId == null) {
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
@@ -51,16 +51,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         Long userId = sessions.get(session.getId());
-        if (userId == null) return;
+        if (userId == null)
+            return;
 
         ChatPayload payload = objectMapper.readValue(message.getPayload(), ChatPayload.class);
         switch (payload.getType()) {
-            case "CHAT_MESSAGE"    -> handleChatMessage(payload, userId);
-            case "TYPING_INDICATOR"-> handleTyping(payload, userId);
-            case "READ_RECEIPT"    -> handleReadReceipt(payload, userId);
-            case "REACTION"        -> handleReaction(payload, userId);
-            case "MESSAGE_EDIT"    -> handleMessageEdit(payload, userId);
-            case "MESSAGE_DELETE"  -> handleMessageDelete(payload, userId);
+            case "CHAT_MESSAGE" -> handleChatMessage(payload, userId);
+            case "TYPING_INDICATOR" -> handleTyping(payload, userId);
+            case "READ_RECEIPT" -> handleReadReceipt(payload, userId);
+            case "REACTION" -> handleReaction(payload, userId);
+            case "MESSAGE_EDIT" -> handleMessageEdit(payload, userId);
+            case "MESSAGE_DELETE" -> handleMessageDelete(payload, userId);
             default -> log.warn("Unknown type: {}", payload.getType());
         }
     }
@@ -70,11 +71,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Object saved = messageServiceClient.saveMessage(payload);
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
         notificationServiceClient.sendNotification(Map.of(
-            "type", "NEW_MESSAGE",
-            "actorId", userId,
-            "roomId", payload.getRoomId(),
-            "content", payload.getContent() != null ? payload.getContent() : ""
-        ));
+                "type", "NEW_MESSAGE",
+                "actorId", userId,
+                "roomId", payload.getRoomId(),
+                "content", payload.getContent() != null ? payload.getContent() : ""));
     }
 
     private void handleTyping(ChatPayload payload, Long userId) {
@@ -147,8 +147,11 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private Long getUserIdFromSession(WebSocketSession session) {
         List<String> headers = session.getHandshakeHeaders().get("X-User-Id");
         if (headers != null && !headers.isEmpty()) {
-            try { return Long.parseLong(headers.get(0)); }
-            catch (Exception e) { return null; }
+            try {
+                return Long.parseLong(headers.get(0));
+            } catch (Exception e) {
+                return null;
+            }
         }
         return null;
     }
