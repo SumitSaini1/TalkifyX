@@ -11,10 +11,12 @@ spring:
             - Path=/api/auth/**
           filters:
             - JwtAuthFilter
+
         - id: auth-oauth
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/oauth2/**, /login/**
+
         - id: auth-swagger
           uri: lb://AUTH-SERVICE
           predicates:
@@ -61,6 +63,27 @@ spring:
             - Path=/ws/**
           filters:
             - JwtAuthFilter
+
+      
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true
+
+     
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+
 
 eureka:
   client:

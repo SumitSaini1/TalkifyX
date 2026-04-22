@@ -35,6 +35,9 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            if (exchange.getRequest().getMethod().name().equals("OPTIONS")) {
+                return chain.filter(exchange);
+            }
 
             String path = exchange.getRequest().getURI().getPath();
 
