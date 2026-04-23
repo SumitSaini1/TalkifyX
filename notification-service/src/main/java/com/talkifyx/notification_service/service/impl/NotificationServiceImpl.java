@@ -8,6 +8,7 @@ import com.talkifyx.notification_service.dto.SendNotificationRequest;
 import com.talkifyx.notification_service.dto.UserProfileDto;
 import com.talkifyx.notification_service.entity.Notification;
 import com.talkifyx.notification_service.entity.NotificationType;
+import com.talkifyx.notification_service.exception.ResourceNotFoundException;
 import com.talkifyx.notification_service.feign.AuthServiceClient;
 import com.talkifyx.notification_service.feign.PresenceServiceClient;
 import com.talkifyx.notification_service.repository.NotificationRepository;
@@ -95,7 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public NotificationResponse markAsRead(String notificationId) {
         Notification n = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found: " + notificationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + notificationId));
         n.setRead(true);
         return toResponse(notificationRepository.save(n));
     }
@@ -109,6 +110,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void delete(String notificationId) {
+        if (!notificationRepository.existsById(notificationId)) {
+            throw new ResourceNotFoundException("Notification not found: " + notificationId);
+        }
         notificationRepository.deleteById(notificationId);
     }
 
