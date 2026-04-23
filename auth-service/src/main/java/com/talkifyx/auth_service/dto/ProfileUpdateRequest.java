@@ -7,4 +7,5 @@ public class ProfileUpdateRequest {
     private String fullName;
     private String avatarUrl;
     private String username;
+    private String fcmToken;
 }

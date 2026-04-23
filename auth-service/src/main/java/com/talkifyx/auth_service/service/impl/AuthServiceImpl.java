@@ -88,6 +88,7 @@ public class AuthServiceImpl implements AuthService {
         User user = getUserByEmail(email);
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
+        if (request.getFcmToken() != null) user.setFcmToken(request.getFcmToken());
         if (request.getUsername() != null) {
             if (userRepository.existsByUsername(request.getUsername()))
                 throw new UserAlreadyExistsException("Username already taken");

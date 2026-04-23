@@ -51,7 +51,7 @@ spring:
             - JwtAuthFilter
 
         - id: notification-service
-          uri: lb://notification-service
+          uri: lb://NOTIFICATION-SERVICE
           predicates:
             - Path=/api/notifications/**
           filters:

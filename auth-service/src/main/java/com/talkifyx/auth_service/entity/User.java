@@ -42,6 +42,8 @@ public class User {
 
     private String fullName;
     private String avatarUrl;
+    @Column
+    private String fcmToken;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
