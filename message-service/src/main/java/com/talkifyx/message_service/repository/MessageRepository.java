@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 public interface MessageRepository extends JpaRepository<Message, String> {
 
     Page<Message> findByRoomIdAndIsDeletedFalseOrderBySentAtDesc(Long roomId, Pageable pageable);
@@ -28,6 +27,10 @@ public interface MessageRepository extends JpaRepository<Message, String> {
     void deleteByMessageId(String messageId);
 
     @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false " +
-           "AND (LOWER(m.content) LIKE LOWER(CONCAT('%',:keyword,'%')))")
+            "AND (LOWER(m.content) LIKE LOWER(CONCAT('%',:keyword,'%')))")
     List<Message> searchInRoom(@Param("roomId") Long roomId, @Param("keyword") String keyword);
+
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.roomId = :roomId AND m.sentAt > :after AND m.senderId != :userId AND m.isDeleted = false")
+    long countUnreadMessages(@Param("roomId") Long roomId, @Param("after") LocalDateTime after,
+            @Param("userId") Long userId);
 }

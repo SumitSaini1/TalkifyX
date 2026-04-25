@@ -17,6 +17,6 @@ public interface MessageService {
     List<MessageResponse> searchMessages(Long roomId, String keyword);
     void updateDeliveryStatus(String messageId, DeliveryStatus status);
     long getMessageCount(Long roomId);
-    long getUnreadMessages(Long roomId, LocalDateTime after);
+    long getUnreadMessages(Long roomId, LocalDateTime after, Long userId);
     List<MessageResponse> getMessagesSentAtAfter(Long roomId, LocalDateTime after);
 }

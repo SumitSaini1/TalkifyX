@@ -47,8 +47,7 @@ public class MessageResource {
     @GetMapping("/room/{roomId}/before")
     public ResponseEntity<List<MessageResponse>> getBefore(
             @PathVariable("roomId") Long roomId,
-            @RequestParam("before")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime before) {
+            @RequestParam("before") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime before) {
         return ResponseEntity.ok(messageService.getMessagesBefore(roomId, before));
     }
 
@@ -67,7 +66,6 @@ public class MessageResource {
         messageService.deleteMessage(messageId, userId);
         return ResponseEntity.noContent().build();
     }
-    
 
     @GetMapping("/room/{roomId}/search")
     public ResponseEntity<List<MessageResponse>> search(
@@ -85,9 +83,9 @@ public class MessageResource {
     @GetMapping("/room/{roomId}/unread")
     public ResponseEntity<Long> unread(
             @PathVariable("roomId") Long roomId,
-            @RequestParam("after")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after) {
-        return ResponseEntity.ok(messageService.getUnreadMessages(roomId, after));
+            @RequestParam("after") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after,
+            @RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(messageService.getUnreadMessages(roomId, after, userId));
     }
 
     @PutMapping("/{messageId}/status")

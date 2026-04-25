@@ -137,9 +137,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public long getUnreadMessages(Long roomId, LocalDateTime after) {
-        return messageRepository.findByRoomIdAndSentAtAfter(roomId, after)
-                .stream().filter(m -> !m.isDeleted()).count();
+    public long getUnreadMessages(Long roomId, LocalDateTime after, Long userId) {
+        return messageRepository.countUnreadMessages(roomId, after, userId);
     }
 
     @Override
