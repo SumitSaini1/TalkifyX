@@ -11,6 +11,7 @@ public class RoomResponse {
     private String type;
     private Long createdById;
     private String avatarUrl;
+    private UserDto otherUser;
     private Boolean isPrivate;
     private Integer maxMembers;
     private LocalDateTime lastMessageAt;

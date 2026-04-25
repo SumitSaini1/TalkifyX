@@ -1,26 +1,34 @@
 package com.talkifyx.room_service.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.talkifyx.room_service.client.AuthServiceClient;
 import com.talkifyx.room_service.client.MessageServiceClient;
-import com.talkifyx.room_service.dto.*;
+import com.talkifyx.room_service.dto.ApiResponse;
+import com.talkifyx.room_service.dto.RoomMemberResponse;
+import com.talkifyx.room_service.dto.RoomRequest;
+import com.talkifyx.room_service.dto.RoomResponse;
+import com.talkifyx.room_service.dto.UserDto;
 import com.talkifyx.room_service.entity.Room;
 import com.talkifyx.room_service.entity.RoomMember;
 import com.talkifyx.room_service.exception.RoomException;
 import com.talkifyx.room_service.repository.RoomMemberRepository;
 import com.talkifyx.room_service.repository.RoomRepository;
 import com.talkifyx.room_service.service.RoomService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final AuthServiceClient authServiceClient;
     private final RoomMemberRepository memberRepository;
     private final MessageServiceClient messageServiceClient;
 
@@ -38,7 +46,6 @@ public class RoomServiceImpl implements RoomService {
                 .build();
         room = roomRepository.save(room);
 
-        // Creator gets ADMIN role
         RoomMember admin = RoomMember.builder()
                 .roomId(room.getRoomId())
                 .userId(createdById)
@@ -46,18 +53,19 @@ public class RoomServiceImpl implements RoomService {
                 .build();
         memberRepository.save(admin);
 
-        return mapToResponse(room);
+        return mapToResponse(room, createdById);
     }
 
     @Override
     public RoomResponse getRoomById(Long roomId) {
-        return mapToResponse(findRoom(roomId));
+        Room r = findRoom(roomId);
+        return mapToResponse(r, r.getCreatedById());
     }
 
     @Override
     public List<RoomResponse> getRoomsByUser(Long userId) {
         return roomRepository.findRoomsByUserId(userId)
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+                .stream().map(r -> mapToResponse(r, userId)).collect(Collectors.toList());
     }
 
     @Override
@@ -65,18 +73,22 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponse updateRoom(Long roomId, RoomRequest request, Long requesterId) {
         Room room = findRoom(roomId);
         requireAdmin(roomId, requesterId);
-        if (request.getName() != null) room.setName(request.getName());
-        if (request.getDescription() != null) room.setDescription(request.getDescription());
-        if (request.getAvatarUrl() != null) room.setAvatarUrl(request.getAvatarUrl());
-        if (request.getIsPrivate() != null) room.setIsPrivate(request.getIsPrivate());
-        return mapToResponse(roomRepository.save(room));
+        if (request.getName() != null)
+            room.setName(request.getName());
+        if (request.getDescription() != null)
+            room.setDescription(request.getDescription());
+        if (request.getAvatarUrl() != null)
+            room.setAvatarUrl(request.getAvatarUrl());
+        if (request.getIsPrivate() != null)
+            room.setIsPrivate(request.getIsPrivate());
+        return mapToResponse(roomRepository.save(room), requesterId);
     }
 
     @Override
     @Transactional
     public void deleteRoom(Long roomId, Long requesterId) {
         requireAdmin(roomId, requesterId);
-        memberRepository.findByRoomId(roomId).forEach(m -> memberRepository.delete(m));
+        memberRepository.findByRoomId(roomId).forEach(memberRepository::delete);
         roomRepository.deleteById(roomId);
     }
 
@@ -139,7 +151,8 @@ public class RoomServiceImpl implements RoomService {
     public long getUnreadCount(Long roomId, Long userId) {
         RoomMember member = memberRepository.findByRoomIdAndUserId(roomId, userId)
                 .orElseThrow(() -> new RoomException("Member not found"));
-        if (member.getLastReadAt() == null) return 0;
+        if (member.getLastReadAt() == null)
+            return 0;
         try {
             return messageServiceClient.getUnreadCount(roomId, member.getLastReadAt().toString());
         } catch (Exception e) {
@@ -147,7 +160,6 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-    // --- Helpers ---
     private Room findRoom(Long roomId) {
         return roomRepository.findById(roomId)
                 .orElseThrow(() -> new RoomException("Room not found: " + roomId));
@@ -160,15 +172,31 @@ public class RoomServiceImpl implements RoomService {
             throw new RoomException("Admin access required");
     }
 
-    private RoomResponse mapToResponse(Room r) {
-        return RoomResponse.builder()
+    private RoomResponse mapToResponse(Room r, Long requestingUserId) {
+        RoomResponse.RoomResponseBuilder builder = RoomResponse.builder()
                 .roomId(r.getRoomId()).name(r.getName())
                 .description(r.getDescription()).type(r.getType().name())
                 .createdById(r.getCreatedById()).avatarUrl(r.getAvatarUrl())
                 .isPrivate(r.getIsPrivate()).maxMembers(r.getMaxMembers())
                 .lastMessageAt(r.getLastMessageAt()).createdAt(r.getCreatedAt())
-                .memberCount(memberRepository.countByRoomId(r.getRoomId()))
-                .build();
+                .memberCount(memberRepository.countByRoomId(r.getRoomId()));
+
+        if (r.getType() == Room.RoomType.DM) {
+            memberRepository.findByRoomId(r.getRoomId()).stream()
+                    .filter(m -> !m.getUserId().equals(requestingUserId))
+                    .findFirst()
+                    .ifPresent(m -> {
+                        try {
+                            ApiResponse<UserDto> response = authServiceClient.getUserById(m.getUserId());
+                            if (response != null && response.getData() != null) {
+                                builder.otherUser(response.getData());
+                            }
+                        } catch (Exception ignored) {
+                        }
+                    });
+        }
+
+        return builder.build();
     }
 
     private RoomMemberResponse mapMemberToResponse(RoomMember m) {
@@ -177,5 +205,10 @@ public class RoomServiceImpl implements RoomService {
                 .userId(m.getUserId()).role(m.getRole().name())
                 .joinedAt(m.getJoinedAt()).lastReadAt(m.getLastReadAt())
                 .isMuted(m.getIsMuted()).build();
+    }
+
+    @Override
+    public RoomResponse getRoomById(Long roomId, Long userId) {
+        return mapToResponse(findRoom(roomId), userId);
     }
 }

@@ -29,8 +29,10 @@ public class RoomResource {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get room by ID")
-    public ResponseEntity<RoomResponse> getRoomById(@PathVariable Long id) {
-        return ResponseEntity.ok(roomService.getRoomById(id));
+    public ResponseEntity<RoomResponse> getRoomById(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(roomService.getRoomById(id, userId));
     }
 
     @GetMapping("/user/{userId}")

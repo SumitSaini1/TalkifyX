@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,8 +45,7 @@ public class AuthResource {
                 "id", user.getId(),
                 "fullName", user.getFullName(),
                 "username", user.getUsername(),
-                "email", user.getEmail()
-        );
+                "email", user.getEmail());
         return ResponseEntity.ok(ApiResponse.success("User registered successfully", data));
     }
 
@@ -54,8 +54,7 @@ public class AuthResource {
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         String token = authService.login(request);
         User user = authService.getUserByEmail(
-                jwtUtil.extractEmail(token)
-        );
+                jwtUtil.extractEmail(token));
         Map<String, Object> data = Map.of(
                 "token", token,
                 "type", "Bearer",
@@ -63,9 +62,7 @@ public class AuthResource {
                         "id", user.getId(),
                         "fullName", user.getFullName(),
                         "username", user.getUsername(),
-                        "email", user.getEmail()
-                )
-        );
+                        "email", user.getEmail()));
         return ResponseEntity.ok(ApiResponse.success("Login successful", data));
     }
 
@@ -76,6 +73,13 @@ public class AuthResource {
             authService.updateStatus(email, User.Status.INVISIBLE);
         }
         return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
+    }
+
+    @GetMapping("/internal/user/{id}")
+    @Operation(summary = "Get user by ID (internal service call)")
+    public ResponseEntity<ApiResponse> getUserById(@PathVariable Long id) {
+        User user = authService.getUserById(id);
+        return ResponseEntity.ok(ApiResponse.success("User found", user));
     }
 
     @GetMapping("/validate")
@@ -95,7 +99,7 @@ public class AuthResource {
     @PutMapping("/profile")
     @Operation(summary = "Update profile")
     public ResponseEntity<ApiResponse> updateProfile(@AuthenticationPrincipal String email,
-                                                      @RequestBody ProfileUpdateRequest request) {
+            @RequestBody ProfileUpdateRequest request) {
         authService.updateProfile(email, request);
         return ResponseEntity.ok(ApiResponse.success("Profile updated", null));
     }
@@ -103,7 +107,7 @@ public class AuthResource {
     @PutMapping("/password")
     @Operation(summary = "Change password")
     public ResponseEntity<ApiResponse> changePassword(@AuthenticationPrincipal String email,
-                                                       @Valid @RequestBody ChangePasswordRequest request) {
+            @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(email, request);
         return ResponseEntity.ok(ApiResponse.success("Password changed", null));
     }
@@ -118,7 +122,7 @@ public class AuthResource {
     @PutMapping("/status")
     @Operation(summary = "Update status")
     public ResponseEntity<ApiResponse> updateStatus(@AuthenticationPrincipal String email,
-                                                     @RequestParam User.Status status) {
+            @RequestParam User.Status status) {
         authService.updateStatus(email, status);
         return ResponseEntity.ok(ApiResponse.success("Status updated", null));
     }

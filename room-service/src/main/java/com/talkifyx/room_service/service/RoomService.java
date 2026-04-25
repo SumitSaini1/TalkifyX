@@ -9,6 +9,7 @@ public interface RoomService {
     List<RoomResponse> getRoomsByUser(Long userId);
     RoomResponse updateRoom(Long roomId, RoomRequest request, Long requesterId);
     void deleteRoom(Long roomId, Long requesterId);
+    RoomResponse getRoomById(Long roomId, Long userId);
     RoomMemberResponse addMember(Long roomId, Long userId, Long requesterId);
     void removeMember(Long roomId, Long userId, Long requesterId);
     List<RoomMemberResponse> getMembers(Long roomId);
