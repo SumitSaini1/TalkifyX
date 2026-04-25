@@ -56,17 +56,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         user.setLastSeenAt(LocalDateTime.now());
         userRepository.save(user);
 
-        // response.sendRedirect("http://localhost:3000/oauth2/callback?token=" +
-        // token);
-        response.setContentType("application/json");
-
-        response.getWriter().write("""
-                    {
-                        "status": 200,
-                        "message": "OAuth login success",
-                        "token": "%s",
-                        "email": "%s"
-                    }
-                """.formatted(token, email));
+        response.sendRedirect("http://localhost:4200/oauth2/callback?token=" + token);
+        
     }
 }

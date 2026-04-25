@@ -8,19 +8,22 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 public class MediaServiceApplication {
-	public static void main(String[] args) {
-		Dotenv dotenv = Dotenv.configure()
-				.ignoreIfMissing()
-				.load();
 
-		if (dotenv.entries().isEmpty()) {
-			System.out.println(".env not found or empty");
-		} else {
-			System.out.println(".env loaded");
-		}
+    public static void main(String[] args) {
 
-		// Load into system properties
-		dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
-		SpringApplication.run(MediaServiceApplication.class, args);
-	}
+        Dotenv dotenv = Dotenv.configure()
+                .directory("./media-service")   
+                .ignoreIfMissing()
+                .load();
+
+        dotenv.entries().forEach(entry -> {
+            System.setProperty(entry.getKey(), entry.getValue());
+        });
+
+
+        System.out.println("AWS_ACCESS_KEY = " + dotenv.get("AWS_ACCESS_KEY"));
+        System.out.println("AWS_SECRET_KEY = " + dotenv.get("AWS_SECRET_KEY"));
+
+        SpringApplication.run(MediaServiceApplication.class, args);
+    }
 }

@@ -31,6 +31,7 @@ public class Message {
     @Column(nullable = false)
     private MessageType type;
 
+    @Column(columnDefinition = "TEXT")
     private String mediaUrl;
 
     @Column(name = "reply_to_message_id", length = 36)

@@ -19,7 +19,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic", "/queue")
-                .setHeartbeatValue(new long[]{10000, 10000})
+                .setHeartbeatValue(new long[] { 10000, 10000 })
                 .setTaskScheduler(heartbeatScheduler());
         registry.setApplicationDestinationPrefixes("/app");
     }
@@ -27,7 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns("http://localhost:4200")
                 .addInterceptors(handshakeInterceptor())
                 .withSockJS();
     }
@@ -37,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return new HandshakeInterceptor() {
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                           WebSocketHandler wsHandler, Map<String, Object> attributes) {
+                    WebSocketHandler wsHandler, Map<String, Object> attributes) {
                 // Try X-User-Id header first (from Gateway)
                 String userId = request.getHeaders().getFirst("X-User-Id");
                 // Fallback: query param ?userId=
@@ -61,7 +61,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
             @Override
             public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                       WebSocketHandler wsHandler, Exception ex) {}
+                    WebSocketHandler wsHandler, Exception ex) {
+            }
         };
     }
 
@@ -73,4 +74,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         scheduler.initialize();
         return scheduler;
     }
+
+  
 }
