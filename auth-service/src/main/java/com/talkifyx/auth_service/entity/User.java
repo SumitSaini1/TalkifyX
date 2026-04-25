@@ -41,6 +41,7 @@ public class User {
     private String password;
 
     private String fullName;
+    @Column(length = 2048)
     private String avatarUrl;
     @Column
     private String fcmToken;

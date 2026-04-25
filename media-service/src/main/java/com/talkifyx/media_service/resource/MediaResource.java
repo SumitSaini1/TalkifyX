@@ -32,7 +32,7 @@ public class MediaResource {
     @Operation(summary = "Upload any allowed file")
     public ResponseEntity<MediaFile> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam Long roomId,
+            @RequestParam (required = false) Long roomId,
             @RequestParam(required = false) String messageId,
             @RequestHeader("X-User-Id") Long userId) {
         MediaFile saved = mediaService.uploadFile(file, roomId, messageId);
@@ -44,7 +44,7 @@ public class MediaResource {
     @Operation(summary = "Upload image with thumbnail generation")
     public ResponseEntity<MediaFile> uploadImage(
             @RequestParam("file") MultipartFile file,
-            @RequestParam Long roomId,
+            @RequestParam (required = false) Long roomId,
             @RequestParam(required = false) String messageId,
             @RequestHeader("X-User-Id") Long userId) {
         MediaFile saved = mediaService.uploadImage(file, roomId, messageId);

@@ -86,14 +86,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void updateProfile(String email, ProfileUpdateRequest request) {
         User user = getUserByEmail(email);
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
-        if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
-        if (request.getFcmToken() != null) user.setFcmToken(request.getFcmToken());
+        if (request.getFullName() != null)
+            user.setFullName(request.getFullName());
+        if (request.getAvatarUrl() != null)
+            user.setAvatarUrl(request.getAvatarUrl());
+        if (request.getFcmToken() != null)
+            user.setFcmToken(request.getFcmToken());
         if (request.getUsername() != null) {
-            if (userRepository.existsByUsername(request.getUsername()))
+            if (!request.getUsername().equals(user.getUsername()) &&
+                    userRepository.existsByUsername(request.getUsername()))
                 throw new UserAlreadyExistsException("Username already taken");
             user.setUsername(request.getUsername());
-        }
+        }   
         userRepository.save(user);
     }
 
