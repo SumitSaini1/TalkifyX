@@ -104,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void changePassword(String email, ChangePasswordRequest request) {
         User user = getUserByEmail(email);
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword()))
             throw new InvalidCredentialsException("Old password incorrect");
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
