@@ -9,6 +9,10 @@ spring:
           max-frame-payload-length: 65536
 
       routes:
+        - id: auth-internal
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/internal/**
         - id: auth-service
           uri: lb://AUTH-SERVICE
           predicates:
