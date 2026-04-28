@@ -25,4 +25,6 @@ public class MessageResponse {
     private DeliveryStatus deliveryStatus;
     private LocalDateTime sentAt;
     private LocalDateTime editedAt;
+    @Builder.Default
+    private String eventType = "MESSAGE"; // ADDED
 }

@@ -4,7 +4,10 @@ import com.talkifyx.message_service.entity.MessageType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MessageRequest {
 
     @NotNull
@@ -16,4 +19,7 @@ public class MessageRequest {
 
     private String mediaUrl;
     private String replyToMessageId;
+
+    private String senderName;
+    private String senderAvatar;
 }

@@ -67,8 +67,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleChatMessage(ChatPayload payload, Long userId) {
-        payload.setSenderId(userId);
-        Object saved = messageServiceClient.saveMessage(payload);
+        // payload.setSenderId(userId);
+        // Object saved = messageServiceClient.saveMessage(payload);
+        Object saved=messageServiceClient.saveMessage(payload, userId);
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
         notificationServiceClient.sendNotification(Map.of(
                 "type", "NEW_MESSAGE",
