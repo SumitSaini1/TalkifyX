@@ -1,5 +1,6 @@
 package com.talkifyx.chat_service.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.talkifyx.chat_service.client.MessageServiceClient;
 import com.talkifyx.chat_service.handler.ChatWebSocketHandler;
 import com.talkifyx.chat_service.payload.*;
@@ -18,6 +19,7 @@ public class ChatStompController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatWebSocketHandler chatWebSocketHandler;
     private final MessageServiceClient messageServiceClient;
+    private final ObjectMapper objectMapper;
 
     // @MessageMapping("/chat.send")
     // public void sendMessage(@Payload ChatPayload payload,
@@ -40,11 +42,29 @@ public class ChatStompController {
     // messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(),
     // saved);
     // }
+    // @MessageMapping("/chat.send")
+    // public void sendMessage(@Payload ChatPayload payload,
+    // @Header("X-User-Id") String userId) {
+    // payload.setSenderId(Long.parseLong(userId));
+    // payload.setType("TEXT"); // force correct enum value
+    // System.out.println("[CHAT] senderName=" + payload.getSenderName() + "
+    // senderAvatar=" + payload.getSenderAvatar());
+    // Object saved = messageServiceClient.saveMessage(payload,
+    // payload.getSenderId());
+    // if (saved == null) {
+    // System.err.println("[CHAT] saveMessage returned null — fallback triggered!");
+    // return;
+    // }
+    // messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(),
+    // saved);
+    // }
     @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatPayload payload,
-            @Header("X-User-Id") String userId) {
+    public void sendMessage(@Payload String rawBody,
+            @Header("X-User-Id") String userId) throws Exception {
+        ChatPayload payload = objectMapper.readValue(rawBody, ChatPayload.class);
         payload.setSenderId(Long.parseLong(userId));
-        payload.setType("TEXT"); // force correct enum value
+        payload.setType("TEXT");
+        System.out.println("[CHAT] senderName=" + payload.getSenderName());
         Object saved = messageServiceClient.saveMessage(payload, payload.getSenderId());
         if (saved == null) {
             System.err.println("[CHAT] saveMessage returned null — fallback triggered!");

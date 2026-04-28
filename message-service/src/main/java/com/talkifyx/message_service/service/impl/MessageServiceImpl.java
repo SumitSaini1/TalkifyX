@@ -53,6 +53,19 @@ public class MessageServiceImpl implements MessageService {
                 .build();
     }
 
+    // @Override
+    // public MessageResponse sendMessage(Long senderId, MessageRequest req) {
+    // Message message = Message.builder()
+    // .roomId(req.getRoomId())
+    // .senderId(senderId)
+    // .content(req.getContent())
+    // .type(req.getType())
+    // .mediaUrl(req.getMediaUrl())
+    // .replyToMessageId(req.getReplyToMessageId())
+    // .build();
+    // return toResponse(messageRepository.save(message));
+    // }
+
     @Override
     public MessageResponse sendMessage(Long senderId, MessageRequest req) {
         Message message = Message.builder()
@@ -63,7 +76,13 @@ public class MessageServiceImpl implements MessageService {
                 .mediaUrl(req.getMediaUrl())
                 .replyToMessageId(req.getReplyToMessageId())
                 .build();
-        return toResponse(messageRepository.save(message));
+        MessageResponse response = toResponse(messageRepository.save(message));
+        // Override senderName/senderAvatar from request (skip Feign call)
+        if (req.getSenderName() != null)
+            response.setSenderName(req.getSenderName());
+        if (req.getSenderAvatar() != null)
+            response.setSenderAvatar(req.getSenderAvatar());
+        return response;
     }
 
     @Override
