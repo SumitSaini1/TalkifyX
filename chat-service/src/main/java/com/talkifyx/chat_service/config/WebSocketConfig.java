@@ -27,7 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:4200")
+                .setAllowedOriginPatterns("*")
                 .addInterceptors(handshakeInterceptor())
                 .withSockJS();
     }
@@ -35,12 +35,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Bean
     public HandshakeInterceptor handshakeInterceptor() {
         return new HandshakeInterceptor() {
+
             @Override
             public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                     WebSocketHandler wsHandler, Map<String, Object> attributes) {
-                // Try X-User-Id header first (from Gateway)
                 String userId = request.getHeaders().getFirst("X-User-Id");
-                // Fallback: query param ?userId=
                 if (userId == null) {
                     String query = request.getURI().getQuery();
                     if (query != null) {
@@ -54,9 +53,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 }
                 if (userId != null) {
                     attributes.put("userId", Long.parseLong(userId));
-                    return true;
                 }
-                return false;
+                return true; // ALWAYS allow — auth is handled by JWT in connectHeaders
             }
 
             @Override
@@ -75,5 +73,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return scheduler;
     }
 
-  
 }

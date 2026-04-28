@@ -1,5 +1,6 @@
 package com.talkifyx.chat_service.controller;
 
+import com.talkifyx.chat_service.client.MessageServiceClient;
 import com.talkifyx.chat_service.handler.ChatWebSocketHandler;
 import com.talkifyx.chat_service.payload.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,29 +17,57 @@ public class ChatStompController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatWebSocketHandler chatWebSocketHandler;
+    private final MessageServiceClient messageServiceClient;
 
+    // @MessageMapping("/chat.send")
+    // public void sendMessage(@Payload ChatPayload payload,
+    // @Header("X-User-Id") String userId) {
+    // payload.setSenderId(Long.parseLong(userId));
+    // Object saved = messageServiceClient.saveMessage(payload);
+    // messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(),
+    // saved);
+    // }
+    // @MessageMapping("/chat.send")
+    // public void sendMessage(@Payload ChatPayload payload,
+    // @Header("X-User-Id") String userId) {
+    // payload.setSenderId(Long.parseLong(userId));
+    // Object saved =
+    // messageServiceClient.saveMessage(payload,payload.getSenderId());
+    // if (saved == null) {
+    // System.err.println("[CHAT] saveMessage returned null — fallback triggered!");
+    // return;
+    // }
+    // messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(),
+    // saved);
+    // }
     @MessageMapping("/chat.send")
-    @SendTo("/topic/room/{roomId}")
-    @Operation(summary = "Send chat message")
-    public ChatPayload sendMessage(@Payload ChatPayload payload,
-                                   @Header("X-User-Id") String userId) {
+    public void sendMessage(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
         payload.setSenderId(Long.parseLong(userId));
-        return payload;
+        payload.setType("TEXT"); // force correct enum value
+        Object saved = messageServiceClient.saveMessage(payload, payload.getSenderId());
+        if (saved == null) {
+            System.err.println("[CHAT] saveMessage returned null — fallback triggered!");
+            return;
+        }
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
     }
 
     @MessageMapping("/chat.typing")
     @Operation(summary = "Typing indicator")
     public void typing(@Payload TypingPayload payload,
-                       @Header("X-User-Id") String userId) {
+            @Header("X-User-Id") String userId) {
         payload.setSenderId(Long.parseLong(userId));
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
     }
 
     @MessageMapping("/chat.read")
-    @Operation(summary = "Read receipt")
-    public void readReceipt(@Payload ReadReceiptPayload payload,
-                            @Header("X-User-Id") String userId) {
-        payload.setReaderId(Long.parseLong(userId));
-        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+    public void readReceipt(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
+        ReadReceiptPayload receipt = new ReadReceiptPayload();
+        receipt.setReaderId(Long.parseLong(userId));
+        receipt.setRoomId(payload.getRoomId());
+        receipt.setUpToMessageId(payload.getMessageId()); // map messageId → upToMessageId
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), receipt);
     }
 }

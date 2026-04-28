@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public interface MessageServiceClient {
 
     @PostMapping("/api/messages")
-    Object saveMessage(@RequestBody ChatPayload payload);
+    Object saveMessage(@RequestBody ChatPayload payload,@RequestHeader("X-User-Id") Long userId);
 
     @PutMapping("/api/messages/{messageId}")
     Object editMessage(@PathVariable String messageId, @RequestParam String content);

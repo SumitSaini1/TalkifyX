@@ -35,3 +35,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# General log files
+*.log
