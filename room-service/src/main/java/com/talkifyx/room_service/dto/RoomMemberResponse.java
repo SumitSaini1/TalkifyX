@@ -12,4 +12,14 @@ public class RoomMemberResponse {
     private LocalDateTime joinedAt;
     private LocalDateTime lastReadAt;
     private Boolean isMuted;
+    private UserInfo user; 
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class UserInfo {
+        private Long id;
+        private String fullName;
+        private String username;
+        private String avatarUrl;
+        private String status;
+    }
 }
