@@ -2,10 +2,7 @@ package com.talkifyx.notification_service.service.impl;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
-import com.talkifyx.notification_service.dto.NotificationResponse;
-import com.talkifyx.notification_service.dto.PresenceDto;
-import com.talkifyx.notification_service.dto.SendNotificationRequest;
-import com.talkifyx.notification_service.dto.UserProfileDto;
+import com.talkifyx.notification_service.dto.*;
 import com.talkifyx.notification_service.entity.Notification;
 import com.talkifyx.notification_service.entity.NotificationType;
 import com.talkifyx.notification_service.exception.ResourceNotFoundException;
@@ -13,8 +10,11 @@ import com.talkifyx.notification_service.feign.AuthServiceClient;
 import com.talkifyx.notification_service.feign.PresenceServiceClient;
 import com.talkifyx.notification_service.repository.NotificationRepository;
 import com.talkifyx.notification_service.service.NotificationService;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,10 +30,12 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final PresenceServiceClient presenceServiceClient;
     private final AuthServiceClient authServiceClient;
-
+   
     @Override
     @Transactional
     public NotificationResponse send(SendNotificationRequest request) {
+
+        // 1. Save notification in DB
         Notification notification = Notification.builder()
                 .notificationId(UUID.randomUUID().toString())
                 .recipientId(request.getRecipientId())
@@ -48,6 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notificationRepository.save(notification);
 
+        // 2. Try FCM push (non-blocking logic)
         try {
             PresenceDto presence = presenceServiceClient.getPresence(request.getRecipientId());
             if ("OFFLINE".equalsIgnoreCase(presence.getStatus())) {
@@ -55,8 +58,11 @@ public class NotificationServiceImpl implements NotificationService {
                         String.valueOf(request.getRecipientId()));
                 if (profile != null && profile.getFcmToken() != null) {
                     sendFcmPush(profile.getFcmToken(), request.getTitle(), request.getMessage());
+                } else {
+                    log.warn("FCM skipped: No FCM token for userId={}", request.getRecipientId());
                 }
             }
+
         } catch (Exception e) {
             log.warn("FCM push failed for recipientId={}: {}", request.getRecipientId(), e.getMessage());
         }
@@ -73,8 +79,10 @@ public class NotificationServiceImpl implements NotificationService {
                             .setBody(body)
                             .build())
                     .build();
+
             String response = FirebaseMessaging.getInstance().send(msg);
-            log.info("FCM sent: {}", response);
+            log.info("FCM sent successfully: {}", response);
+
         } catch (Exception e) {
             log.error("FCM send error: {}", e.getMessage());
         }
@@ -97,6 +105,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse markAsRead(String notificationId) {
         Notification n = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + notificationId));
+
         n.setRead(true);
         return toResponse(notificationRepository.save(n));
     }

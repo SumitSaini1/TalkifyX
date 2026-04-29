@@ -5,10 +5,12 @@ import com.talkifyx.chat_service.config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
 @FeignClient(name = "room-service", configuration = FeignConfig.class,
         fallbackFactory = RoomServiceFallbackFactory.class)
 public interface RoomServiceClient {
 
     @GetMapping("/api/rooms/{roomId}/members")
-    Object getRoomMembers(@PathVariable Long roomId);
+    List<Map<String, Object>> getRoomMembers(@PathVariable Long roomId);
 }

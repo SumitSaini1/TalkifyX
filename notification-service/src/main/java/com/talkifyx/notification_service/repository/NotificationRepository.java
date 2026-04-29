@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface NotificationRepository extends JpaRepository<Notification, String> {
 
@@ -14,9 +15,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
 
     long countByRecipientIdAndIsRead(Long recipientId, boolean isRead);
 
-    Page<Notification> findByRecipientIdAndTypeOrderByCreatedAtDesc(Long recipientId, NotificationType type, Pageable pageable);
+    Page<Notification> findByRecipientIdAndTypeOrderByCreatedAtDesc(Long recipientId, NotificationType type,
+            Pageable pageable);
 
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.recipientId = :recipientId AND n.isRead = false")
-    void markAllReadByRecipientId(Long recipientId);
+    void markAllReadByRecipientId(@Param("recipientId") Long recipientId);
 }

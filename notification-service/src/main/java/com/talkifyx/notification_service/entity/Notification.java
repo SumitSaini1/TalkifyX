@@ -25,6 +25,7 @@ public class Notification {
     private NotificationType type;
 
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String message;
     private Long roomId;
     private String messageId;
