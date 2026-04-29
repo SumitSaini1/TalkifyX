@@ -6,7 +6,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "rooms")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Room {
 
     @Id
@@ -20,6 +24,7 @@ public class Room {
     private RoomType type;
 
     private Long createdById;
+    @Column(name = "avatar_url", length = 1000)
     private String avatarUrl;
     private Boolean isPrivate;
     private Integer maxMembers;
@@ -31,5 +36,7 @@ public class Room {
         this.createdAt = LocalDateTime.now();
     }
 
-    public enum RoomType { GROUP, DM }
+    public enum RoomType {
+        GROUP, DM
+    }
 }

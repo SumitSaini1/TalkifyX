@@ -200,11 +200,32 @@ public class RoomServiceImpl implements RoomService {
     }
 
     private RoomMemberResponse mapMemberToResponse(RoomMember m) {
+        RoomMemberResponse.UserInfo userInfo = null;
+        try {
+            ApiResponse<UserDto> response = authServiceClient.getUserById(m.getUserId());
+            if (response != null && response.getData() != null) {
+                UserDto u = response.getData();
+                userInfo = RoomMemberResponse.UserInfo.builder()
+                        .id(u.getId())
+                        .fullName(u.getFullName())
+                        .username(u.getUsername())
+                        .avatarUrl(u.getAvatarUrl())
+                        .status(u.getStatus())
+                        .build();
+            }
+        } catch (Exception ignored) {
+        }
+
         return RoomMemberResponse.builder()
-                .memberId(m.getMemberId()).roomId(m.getRoomId())
-                .userId(m.getUserId()).role(m.getRole().name())
-                .joinedAt(m.getJoinedAt()).lastReadAt(m.getLastReadAt())
-                .isMuted(m.getIsMuted()).build();
+                .memberId(m.getMemberId())
+                .roomId(m.getRoomId())
+                .userId(m.getUserId())
+                .role(m.getRole().name())
+                .joinedAt(m.getJoinedAt())
+                .lastReadAt(m.getLastReadAt())
+                .isMuted(m.getIsMuted())
+                .user(userInfo)
+                .build();
     }
 
     @Override
