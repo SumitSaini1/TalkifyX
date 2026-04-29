@@ -2,11 +2,18 @@ package com.talkifyx.chat_service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.talkifyx.chat_service.client.MessageServiceClient;
+import com.talkifyx.chat_service.client.NotificationServiceClient;
+import com.talkifyx.chat_service.client.RoomServiceClient;
 import com.talkifyx.chat_service.handler.ChatWebSocketHandler;
 import com.talkifyx.chat_service.payload.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -20,6 +27,8 @@ public class ChatStompController {
     private final ChatWebSocketHandler chatWebSocketHandler;
     private final MessageServiceClient messageServiceClient;
     private final ObjectMapper objectMapper;
+    private final RoomServiceClient roomServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
 
     // @MessageMapping("/chat.send")
     // public void sendMessage(@Payload ChatPayload payload,
@@ -71,6 +80,27 @@ public class ChatStompController {
             return;
         }
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
+
+        // ← add this
+        try {
+            List<Map<String, Object>> members = roomServiceClient.getRoomMembers(payload.getRoomId());
+            if (members != null) {
+                for (Map<String, Object> member : members) {
+                    Long memberId = Long.valueOf(member.get("userId").toString());
+                    if (!memberId.equals(Long.parseLong(userId))) {
+                        notificationServiceClient.sendNotification(Map.of(
+                                "recipientId", memberId,
+                                "actorId", Long.parseLong(userId),
+                                "type", "NEW_MESSAGE",
+                                "roomId", payload.getRoomId(),
+                                "title", payload.getSenderName() != null ? payload.getSenderName() : "New Message",
+                                "message", payload.getContent() != null ? payload.getContent() : "📎 Attachment"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[CHAT] Notification failed: " + e.getMessage());
+        }
     }
 
     @MessageMapping("/chat.typing")

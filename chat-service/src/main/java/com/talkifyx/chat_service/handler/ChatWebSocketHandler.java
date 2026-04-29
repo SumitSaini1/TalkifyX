@@ -67,15 +67,30 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleChatMessage(ChatPayload payload, Long userId) {
-        // payload.setSenderId(userId);
-        // Object saved = messageServiceClient.saveMessage(payload);
-        Object saved=messageServiceClient.saveMessage(payload, userId);
+        Object saved = messageServiceClient.saveMessage(payload, userId);
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
-        notificationServiceClient.sendNotification(Map.of(
-                "type", "NEW_MESSAGE",
-                "actorId", userId,
-                "roomId", payload.getRoomId(),
-                "content", payload.getContent() != null ? payload.getContent() : ""));
+
+        try {
+            List<Map<String, Object>> members = roomServiceClient.getRoomMembers(payload.getRoomId());
+            log.info("Members fetched size: {}", members != null ? members.size() : "NULL"); // ← add here
+            if (members == null)
+                return;
+            for (Map<String, Object> member : members) {
+                Long memberId = Long.valueOf(member.get("userId").toString());
+                log.info("Notifying memberId={}", memberId);
+                if (!memberId.equals(userId)) {
+                    notificationServiceClient.sendNotification(Map.of(
+                            "recipientId", memberId,
+                            "actorId", userId,
+                            "type", "NEW_MESSAGE",
+                            "roomId", payload.getRoomId(),
+                            "title", "New Message",
+                            "message", payload.getContent() != null ? payload.getContent() : "📎 Attachment"));
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Notification send failed: {}", e.getMessage());
+        }
     }
 
     private void handleTyping(ChatPayload payload, Long userId) {
