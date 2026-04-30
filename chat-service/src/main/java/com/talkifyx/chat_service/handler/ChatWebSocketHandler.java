@@ -67,7 +67,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleChatMessage(ChatPayload payload, Long userId) {
-        Object saved = messageServiceClient.saveMessage(payload, userId);
+        com.talkifyx.chat_service.payload.MessageRequest msgRequest =
+                com.talkifyx.chat_service.payload.MessageRequest.builder()
+                        .roomId(payload.getRoomId())
+                        .content(payload.getContent())
+                        .type("TEXT")
+                        .replyToMessageId(payload.getReplyToId())
+                        .senderName(payload.getSenderName())
+                        .senderAvatar(payload.getSenderAvatar())
+                        .build();
+
+        Object saved = messageServiceClient.saveMessage(msgRequest, userId);
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
 
         try {

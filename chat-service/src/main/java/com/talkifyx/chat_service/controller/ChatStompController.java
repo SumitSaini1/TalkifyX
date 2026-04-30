@@ -38,10 +38,20 @@ public class ChatStompController {
             @Header("X-User-Id") String userId) throws Exception {
         ChatPayload payload = objectMapper.readValue(rawBody, ChatPayload.class);
         payload.setSenderId(Long.parseLong(userId));
-        payload.setType("TEXT");
-        System.out.println("[CHAT] senderName=" + payload.getSenderName());
+        System.out.println("[CHAT] senderName=" + payload.getSenderName() + " replyToId=" + payload.getReplyToId());
 
-        Object saved = messageServiceClient.saveMessage(payload, payload.getSenderId());
+        // Build a proper MessageRequest with correct field names for message-service
+        com.talkifyx.chat_service.payload.MessageRequest msgRequest =
+                com.talkifyx.chat_service.payload.MessageRequest.builder()
+                        .roomId(payload.getRoomId())
+                        .content(payload.getContent())
+                        .type("TEXT")
+                        .replyToMessageId(payload.getReplyToId())   // ← correct mapping!
+                        .senderName(payload.getSenderName())
+                        .senderAvatar(payload.getSenderAvatar())
+                        .build();
+
+        Object saved = messageServiceClient.saveMessage(msgRequest, Long.parseLong(userId));
         if (saved == null) {
             System.err.println("[CHAT] saveMessage returned null — fallback triggered!");
             return;

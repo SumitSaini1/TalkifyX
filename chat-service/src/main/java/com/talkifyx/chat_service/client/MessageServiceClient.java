@@ -2,7 +2,7 @@ package com.talkifyx.chat_service.client;
 
 import com.talkifyx.chat_service.client.fallback.MessageServiceFallbackFactory;
 import com.talkifyx.chat_service.config.FeignConfig;
-import com.talkifyx.chat_service.payload.ChatPayload;
+import com.talkifyx.chat_service.payload.MessageRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public interface MessageServiceClient {
 
     @PostMapping("/api/messages")
-    Object saveMessage(@RequestBody ChatPayload payload, @RequestHeader("X-User-Id") Long userId);
+    Object saveMessage(@RequestBody MessageRequest request, @RequestHeader("X-User-Id") Long userId);
 
     @PutMapping("/api/messages/{messageId}")
     Object editMessage(@PathVariable("messageId") String messageId, @RequestParam("content") String content);

@@ -35,6 +35,34 @@ public class MessageServiceImpl implements MessageService {
         } catch (Exception ignored) {
         }
 
+        // Populate nested reply preview (one level only — no recursion)
+        MessageResponse replyPreview = null;
+        if (m.getReplyToMessageId() != null) {
+            try {
+                replyPreview = messageRepository.findById(m.getReplyToMessageId())
+                        .map(orig -> {
+                            String origName = null;
+                            try {
+                                ApiResponse<SenderDto> origRes = authServiceClient.getUserById(orig.getSenderId());
+                                if (origRes != null && origRes.getData() != null)
+                                    origName = origRes.getData().getFullName();
+                            } catch (Exception ignored) {}
+                            return MessageResponse.builder()
+                                    .messageId(orig.getMessageId())
+                                    .roomId(orig.getRoomId())
+                                    .senderId(orig.getSenderId())
+                                    .senderName(origName)
+                                    .content(orig.isDeleted() ? "This message was deleted" : orig.getContent())
+                                    .type(orig.getType())
+                                    .mediaUrl(orig.getMediaUrl())
+                                    .isDeleted(orig.isDeleted())
+                                    .sentAt(orig.getSentAt())
+                                    .build();
+                        })
+                        .orElse(null);
+            } catch (Exception ignored) {}
+        }
+
         return MessageResponse.builder()
                 .messageId(m.getMessageId())
                 .roomId(m.getRoomId())
@@ -45,6 +73,7 @@ public class MessageServiceImpl implements MessageService {
                 .type(m.getType())
                 .mediaUrl(m.getMediaUrl())
                 .replyToMessageId(m.getReplyToMessageId())
+                .replyToMessage(replyPreview)
                 .isEdited(m.isEdited())
                 .isDeleted(m.isDeleted())
                 .deliveryStatus(m.getDeliveryStatus())
