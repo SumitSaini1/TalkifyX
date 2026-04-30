@@ -117,6 +117,22 @@ public class ChatStompController {
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
     }
 
+    @MessageMapping("/chat.edit")
+    public void editMessage(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
+        payload.setSenderId(Long.parseLong(userId));
+        // Frontend already called HTTP API to save edit. Just broadcast to room.
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+    }
+
+    @MessageMapping("/chat.delete")
+    public void deleteMessage(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
+        payload.setSenderId(Long.parseLong(userId));
+        // Frontend already called HTTP API to delete. Just broadcast to room.
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+    }
+
     @MessageMapping("/chat.read")
     public void readReceipt(@Payload ChatPayload payload,
             @Header("X-User-Id") String userId) {
