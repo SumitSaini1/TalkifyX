@@ -13,11 +13,11 @@ import java.util.Map;
 public interface RoomServiceClient {
 
     @GetMapping("/api/rooms/{roomId}/members")
-    List<Map<String, Object>> getRoomMembers(@PathVariable Long roomId);
+    List<Map<String, Object>> getRoomMembers(@PathVariable("roomId") Long roomId);
 
     @PutMapping("/api/rooms/{roomId}/read")
-    void updateLastRead(@PathVariable Long roomId, @RequestHeader("X-User-Id") Long userId);
+    void updateLastRead(@PathVariable("roomId") Long roomId, @RequestHeader("X-User-Id") Long userId);
 
     @PutMapping("/api/rooms/{roomId}/last-message-at")
-    void updateLastMessageAt(@PathVariable Long roomId, @RequestParam String at);
+    void updateLastMessageAt(@PathVariable("roomId") Long roomId, @RequestParam("at") String at);
 }

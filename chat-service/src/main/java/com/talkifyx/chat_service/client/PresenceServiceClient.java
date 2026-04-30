@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 public interface PresenceServiceClient {
 
     @PutMapping("/api/presence/{userId}")
-    void updatePresence(@PathVariable Long userId, @RequestBody PresencePayload payload);
+    void updatePresence(@PathVariable("userId") Long userId, @RequestBody PresencePayload payload);
 
     @GetMapping("/api/presence/{userId}")
-    Object getPresence(@PathVariable Long userId);
+    Object getPresence(@PathVariable("userId") Long userId);
 }

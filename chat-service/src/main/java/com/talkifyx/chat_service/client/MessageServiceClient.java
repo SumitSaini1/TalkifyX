@@ -14,14 +14,14 @@ public interface MessageServiceClient {
     Object saveMessage(@RequestBody ChatPayload payload, @RequestHeader("X-User-Id") Long userId);
 
     @PutMapping("/api/messages/{messageId}")
-    Object editMessage(@PathVariable String messageId, @RequestParam String content);
+    Object editMessage(@PathVariable("messageId") String messageId, @RequestParam("content") String content);
 
     @DeleteMapping("/api/messages/{messageId}")
-    void deleteMessage(@PathVariable String messageId);
+    void deleteMessage(@PathVariable("messageId") String messageId);
 
     @PutMapping("/api/messages/{messageId}/status")
-    void updateStatus(@PathVariable String messageId, @RequestParam String status);
+    void updateStatus(@PathVariable("messageId") String messageId, @RequestParam("status") String status);
 
     @PutMapping("/api/messages/room/{roomId}/mark-read")
-    void markRoomRead(@PathVariable Long roomId, @RequestHeader("X-User-Id") Long readerId);
+    void markRoomRead(@PathVariable("roomId") Long roomId, @RequestHeader("X-User-Id") Long readerId);
 }
