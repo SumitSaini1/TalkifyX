@@ -11,10 +11,11 @@ public class MessageServiceFallbackFactory implements FallbackFactory<MessageSer
     @Override
     public MessageServiceClient create(Throwable cause) {
         return new MessageServiceClient() {
-            @Override public Object saveMessage(ChatPayload p,Long userId) { return null; }
+            @Override public Object saveMessage(ChatPayload p, Long userId) { return null; }
             @Override public Object editMessage(String id, String c) { return null; }
             @Override public void deleteMessage(String id) {}
             @Override public void updateStatus(String id, String s) {}
+            @Override public void markRoomRead(Long roomId, Long readerId) {}
         };
     }
-}
+}

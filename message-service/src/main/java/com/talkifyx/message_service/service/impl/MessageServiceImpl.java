@@ -165,4 +165,9 @@ public class MessageServiceImpl implements MessageService {
         return messageRepository.findByRoomIdAndSentAtAfter(roomId, after)
                 .stream().map(this::toResponse).toList();
     }
+
+    @Override
+    public void markRoomMessagesRead(Long roomId, Long readerId) {
+        messageRepository.bulkUpdateDeliveryStatus(roomId, readerId, DeliveryStatus.READ);
+    }
 }

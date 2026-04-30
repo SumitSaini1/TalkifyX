@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public interface MessageServiceClient {
 
     @PostMapping("/api/messages")
-    Object saveMessage(@RequestBody ChatPayload payload,@RequestHeader("X-User-Id") Long userId);
+    Object saveMessage(@RequestBody ChatPayload payload, @RequestHeader("X-User-Id") Long userId);
 
     @PutMapping("/api/messages/{messageId}")
     Object editMessage(@PathVariable String messageId, @RequestParam String content);
@@ -21,4 +21,7 @@ public interface MessageServiceClient {
 
     @PutMapping("/api/messages/{messageId}/status")
     void updateStatus(@PathVariable String messageId, @RequestParam String status);
-}
+
+    @PutMapping("/api/messages/room/{roomId}/mark-read")
+    void markRoomRead(@PathVariable Long roomId, @RequestHeader("X-User-Id") Long readerId);
+}

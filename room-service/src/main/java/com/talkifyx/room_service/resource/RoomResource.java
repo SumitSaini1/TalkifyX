@@ -121,4 +121,13 @@ public class RoomResource {
         roomService.updateLastRead(id, userId);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/last-message-at")
+    @Operation(summary = "Update last message timestamp")
+    public ResponseEntity<Void> updateLastMessageAt(
+            @PathVariable Long id,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime at) {
+        roomService.updateLastMessageAt(id, at);
+        return ResponseEntity.ok().build();
+    }
 }

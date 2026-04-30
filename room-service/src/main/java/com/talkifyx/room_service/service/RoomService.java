@@ -1,6 +1,7 @@
 package com.talkifyx.room_service.service;
 
 import com.talkifyx.room_service.dto.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RoomService {
@@ -17,4 +18,5 @@ public interface RoomService {
     void muteUnmuteMember(Long roomId, Long userId, boolean mute, Long requesterId);
     void updateLastRead(Long roomId, Long userId);
     long getUnreadCount(Long roomId, Long userId);
-}
+    void updateLastMessageAt(Long roomId, LocalDateTime at);
+}

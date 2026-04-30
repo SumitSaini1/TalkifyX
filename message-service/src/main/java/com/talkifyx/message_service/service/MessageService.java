@@ -19,4 +19,5 @@ public interface MessageService {
     long getMessageCount(Long roomId);
     long getUnreadMessages(Long roomId, LocalDateTime after, Long userId);
     List<MessageResponse> getMessagesSentAtAfter(Long roomId, LocalDateTime after);
+    void markRoomMessagesRead(Long roomId, Long readerId);
 }

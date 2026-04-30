@@ -1,5 +1,6 @@
 package com.talkifyx.presence_service.service.impl;
 
+import com.talkifyx.presence_service.client.ChatNotifyClient;
 import com.talkifyx.presence_service.dto.PresenceRequest;
 import com.talkifyx.presence_service.dto.PresenceResponse;
 import com.talkifyx.presence_service.entity.UserPresence;
@@ -20,6 +21,7 @@ public class PresenceServiceImpl implements PresenceService {
 
     private final UserPresenceRepository repository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ChatNotifyClient chatNotifyClient;
 
     private static final String REDIS_PREFIX = "presence:";
 
@@ -36,7 +38,9 @@ public class PresenceServiceImpl implements PresenceService {
         presence.setLastPingAt(LocalDateTime.now());
         presence = repository.save(presence);
         cacheToRedis(presence);
-        return toResponse(presence);
+        PresenceResponse response = toResponse(presence);
+        notifyClients(response);
+        return response;
     }
 
     @Override
@@ -47,17 +51,40 @@ public class PresenceServiceImpl implements PresenceService {
         presence.setCustomMessage(customMessage);
         presence = repository.save(presence);
         cacheToRedis(presence);
-        return toResponse(presence);
+        PresenceResponse response = toResponse(presence);
+        notifyClients(response);
+        return response;
     }
 
     @Override
     public PresenceResponse ping(String sessionId) {
-        UserPresence presence = repository.findBySessionId(sessionId)
-                .orElseThrow(() -> new RuntimeException("Session not found: " + sessionId));
+        UserPresence presence = repository.findBySessionId(sessionId).orElse(null);
+        if (presence == null) {
+            // Auto-heal: parse userId from session_<userId>_<timestamp>
+            try {
+                String[] parts = sessionId.split("_");
+                if (parts.length >= 2) {
+                    Long userId = Long.parseLong(parts[1]);
+                    presence = repository.findByUserId(userId)
+                            .orElse(UserPresence.builder().userId(userId).build());
+                    presence.setStatus("ONLINE");
+                    presence.setSessionId(sessionId);
+                    presence.setConnectedAt(LocalDateTime.now());
+                } else {
+                    throw new RuntimeException("Invalid session format: " + sessionId);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Session not found and could not auto-heal: " + sessionId);
+            }
+        }
+        
         presence.setLastPingAt(LocalDateTime.now());
         presence = repository.save(presence);
         cacheToRedis(presence);
-        return toResponse(presence);
+        PresenceResponse response = toResponse(presence);
+        // Only notify if we had to auto-heal (status changed to ONLINE), but safe to just notify
+        notifyClients(response);
+        return response;
     }
 
     @Override
@@ -67,6 +94,7 @@ public class PresenceServiceImpl implements PresenceService {
             presence.setSessionId(null);
             repository.save(presence);
             redisTemplate.delete(REDIS_PREFIX + presence.getUserId());
+            notifyClients(toResponse(presence));
         });
     }
 
@@ -97,6 +125,7 @@ public class PresenceServiceImpl implements PresenceService {
             presence.setSessionId(null);
             repository.save(presence);
             redisTemplate.delete(REDIS_PREFIX + presence.getUserId());
+            notifyClients(toResponse(presence));
         });
     }
 
@@ -115,5 +144,13 @@ public class PresenceServiceImpl implements PresenceService {
                 .connectedAt(p.getConnectedAt())
                 .lastPingAt(p.getLastPingAt())
                 .build();
+    }
+
+    private void notifyClients(PresenceResponse response) {
+        try {
+            chatNotifyClient.notifyPresence(response);
+        } catch (Exception e) {
+            System.err.println("[PRESENCE] Failed to notify chat-service: " + e.getMessage());
+        }
     }
 }

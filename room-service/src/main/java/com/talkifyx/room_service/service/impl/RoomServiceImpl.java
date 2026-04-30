@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.talkifyx.room_service.client.AuthServiceClient;
+import com.talkifyx.room_service.client.ChatNotifyClient;
 import com.talkifyx.room_service.client.MessageServiceClient;
 import com.talkifyx.room_service.dto.ApiResponse;
 import com.talkifyx.room_service.dto.RoomMemberResponse;
@@ -31,6 +32,7 @@ public class RoomServiceImpl implements RoomService {
     private final AuthServiceClient authServiceClient;
     private final RoomMemberRepository memberRepository;
     private final MessageServiceClient messageServiceClient;
+    private final ChatNotifyClient chatNotifyClient;
 
     @Override
     @Transactional
@@ -53,7 +55,18 @@ public class RoomServiceImpl implements RoomService {
                 .build();
         memberRepository.save(admin);
 
-        return mapToResponse(room, createdById);
+        RoomResponse response = mapToResponse(room, createdById);
+
+        // Notify all members via WebSocket (new room event)
+        try {
+            List<Long> memberIds = memberRepository.findByRoomId(room.getRoomId())
+                    .stream().map(RoomMember::getUserId).collect(Collectors.toList());
+            chatNotifyClient.notifyNewRoom(response, memberIds);
+        } catch (Exception e) {
+            System.err.println("[ROOM] Failed to notify new room: " + e.getMessage());
+        }
+
+        return response;
     }
 
     @Override
@@ -231,5 +244,14 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomResponse getRoomById(Long roomId, Long userId) {
         return mapToResponse(findRoom(roomId), userId);
+    }
+
+    @Override
+    @Transactional
+    public void updateLastMessageAt(Long roomId, LocalDateTime at) {
+        roomRepository.findById(roomId).ifPresent(room -> {
+            room.setLastMessageAt(at);
+            roomRepository.save(room);
+        });
     }
 }

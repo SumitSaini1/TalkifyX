@@ -95,4 +95,12 @@ public class MessageResource {
         messageService.updateDeliveryStatus(messageId, status);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/room/{roomId}/mark-read")
+    public ResponseEntity<Void> markRoomRead(
+            @PathVariable("roomId") Long roomId,
+            @RequestHeader("X-User-Id") Long userId) {
+        messageService.markRoomMessagesRead(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
 }
