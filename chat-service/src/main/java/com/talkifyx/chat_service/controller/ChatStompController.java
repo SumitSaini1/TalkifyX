@@ -45,7 +45,8 @@ public class ChatStompController {
                 com.talkifyx.chat_service.payload.MessageRequest.builder()
                         .roomId(payload.getRoomId())
                         .content(payload.getContent())
-                        .type("TEXT")
+                        .type(payload.getMessageType() != null ? payload.getMessageType() : "TEXT")
+                        .mediaUrl(payload.getMediaUrl())
                         .replyToMessageId(payload.getReplyToId())   // ← correct mapping!
                         .senderName(payload.getSenderName())
                         .senderAvatar(payload.getSenderAvatar())

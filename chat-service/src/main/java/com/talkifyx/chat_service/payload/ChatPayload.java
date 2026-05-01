@@ -22,4 +22,6 @@ public class ChatPayload {
     private String senderAvatar;
 
     private String deleteType;
+    private String messageType;
+    private String mediaUrl;
 }
