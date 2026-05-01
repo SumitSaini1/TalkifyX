@@ -139,6 +139,23 @@ public class ChatStompController {
         }
     }
 
+    @MessageMapping("/chat.react")
+    public void reactToMessage(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
+        payload.setSenderId(Long.parseLong(userId));
+        // Save reaction in message-service and get back updated groups
+        Object updatedReactions = messageServiceClient.reactToMessage(
+                payload.getMessageId(), Long.parseLong(userId), payload.getEmoji());
+        // Broadcast to room with updated reactions
+        Map<String, Object> event = Map.of(
+                "eventType", "REACTION",
+                "messageId", payload.getMessageId(),
+                "roomId", payload.getRoomId(),
+                "reactions", updatedReactions != null ? updatedReactions : java.util.List.of()
+        );
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), event);
+    }
+
     @MessageMapping("/chat.read")
     public void readReceipt(@Payload ChatPayload payload,
             @Header("X-User-Id") String userId) {

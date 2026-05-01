@@ -15,6 +15,7 @@ public class MessageServiceFallbackFactory implements FallbackFactory<MessageSer
             @Override public Object editMessage(String id, String c) { return null; }
             @Override public void deleteMessage(String id, Long userId, String type) {}
             @Override public void updateStatus(String id, String s) {}
+            @Override public Object reactToMessage(String messageId, Long userId, String emoji) { return null; }
             @Override public void markRoomRead(Long roomId, Long readerId) {}
         };
     }

@@ -20,4 +20,6 @@ public interface MessageService {
     long getUnreadMessages(Long roomId, LocalDateTime after, Long userId);
     List<MessageResponse> getMessagesSentAtAfter(Long roomId, LocalDateTime after, Long userId);
     void markRoomMessagesRead(Long roomId, Long readerId);
-}
+    /** Adds, updates or removes a reaction. Returns updated reaction list for the message. */
+    List<ReactionGroupDto> reactToMessage(String messageId, Long userId, String emoji);
+}

@@ -4,6 +4,8 @@ import com.talkifyx.message_service.entity.DeliveryStatus;
 import com.talkifyx.message_service.entity.MessageType;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -28,4 +30,6 @@ public class MessageResponse {
     private LocalDateTime editedAt;
     @Builder.Default
     private String eventType = "MESSAGE"; // ADDED
-}
+    @Builder.Default
+    private List<ReactionGroupDto> reactions = new ArrayList<>();
+}
