@@ -18,6 +18,7 @@ public class MessageResponse {
     private MessageType type;
     private String mediaUrl;
     private String replyToMessageId;
+    private MessageResponse replyToMessage;   // nested preview — never recursively populated
     private boolean isEdited;
     private String senderName;
     private String senderAvatar;

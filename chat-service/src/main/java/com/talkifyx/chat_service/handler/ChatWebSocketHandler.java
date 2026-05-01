@@ -67,7 +67,17 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleChatMessage(ChatPayload payload, Long userId) {
-        Object saved = messageServiceClient.saveMessage(payload, userId);
+        com.talkifyx.chat_service.payload.MessageRequest msgRequest =
+                com.talkifyx.chat_service.payload.MessageRequest.builder()
+                        .roomId(payload.getRoomId())
+                        .content(payload.getContent())
+                        .type("TEXT")
+                        .replyToMessageId(payload.getReplyToId())
+                        .senderName(payload.getSenderName())
+                        .senderAvatar(payload.getSenderAvatar())
+                        .build();
+
+        Object saved = messageServiceClient.saveMessage(msgRequest, userId);
         messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), saved);
 
         try {
@@ -120,8 +130,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleMessageDelete(ChatPayload payload, Long userId) {
-        messageServiceClient.deleteMessage(payload.getDeletedId());
-        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        String deleteType = payload.getDeleteType() != null ? payload.getDeleteType() : "EVERYONE";
+        messageServiceClient.deleteMessage(payload.getDeletedId(), userId, deleteType);
+        
+        if ("ME".equalsIgnoreCase(deleteType)) {
+            messagingTemplate.convertAndSend("/topic/user/" + userId, payload);
+        } else {
+            messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        }
     }
 
     @Override

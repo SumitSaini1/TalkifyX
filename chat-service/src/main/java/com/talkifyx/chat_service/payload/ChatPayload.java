@@ -20,4 +20,6 @@ public class ChatPayload {
 
     @JsonProperty("senderAvatar")
     private String senderAvatar;
+
+    private String deleteType;
 }
