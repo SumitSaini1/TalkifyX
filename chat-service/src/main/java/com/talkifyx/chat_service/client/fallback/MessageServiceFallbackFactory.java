@@ -13,7 +13,7 @@ public class MessageServiceFallbackFactory implements FallbackFactory<MessageSer
         return new MessageServiceClient() {
             @Override public Object saveMessage(MessageRequest p, Long userId) { return null; }
             @Override public Object editMessage(String id, String c) { return null; }
-            @Override public void deleteMessage(String id) {}
+            @Override public void deleteMessage(String id, Long userId, String type) {}
             @Override public void updateStatus(String id, String s) {}
             @Override public void markRoomRead(Long roomId, Long readerId) {}
         };

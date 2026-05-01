@@ -15,23 +15,28 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, String> {
 
-    Page<Message> findByRoomIdAndIsDeletedFalseOrderBySentAtDesc(Long roomId, Pageable pageable);
+    @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false AND :userId NOT MEMBER OF m.deletedForUsers ORDER BY m.sentAt DESC")
+    Page<Message> findVisibleMessagesByRoomId(@Param("roomId") Long roomId, @Param("userId") Long userId, Pageable pageable);
 
-    List<Message> findByRoomIdOrderBySentAtDesc(Long roomId);
+    @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false AND :userId NOT MEMBER OF m.deletedForUsers ORDER BY m.sentAt DESC")
+    List<Message> findVisibleMessagesByRoomIdList(@Param("roomId") Long roomId, @Param("userId") Long userId);
 
     List<Message> findBySenderId(Long senderId);
 
-    List<Message> findByRoomIdAndSentAtBefore(Long roomId, LocalDateTime before);
+    @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false AND m.sentAt < :before AND :userId NOT MEMBER OF m.deletedForUsers ORDER BY m.sentAt DESC")
+    List<Message> findVisibleMessagesByRoomIdAndSentAtBefore(@Param("roomId") Long roomId, @Param("before") LocalDateTime before, @Param("userId") Long userId);
 
-    List<Message> findByRoomIdAndSentAtAfter(Long roomId, LocalDateTime after);
+    @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false AND m.sentAt > :after AND :userId NOT MEMBER OF m.deletedForUsers ORDER BY m.sentAt ASC")
+    List<Message> findVisibleMessagesByRoomIdAndSentAtAfter(@Param("roomId") Long roomId, @Param("after") LocalDateTime after, @Param("userId") Long userId);
 
     long countByRoomIdAndIsDeletedFalse(Long roomId);
 
     void deleteByMessageId(String messageId);
 
     @Query("SELECT m FROM Message m WHERE m.roomId = :roomId AND m.isDeleted = false " +
+            "AND :userId NOT MEMBER OF m.deletedForUsers " +
             "AND (LOWER(m.content) LIKE LOWER(CONCAT('%',:keyword,'%')))")
-    List<Message> searchInRoom(@Param("roomId") Long roomId, @Param("keyword") String keyword);
+    List<Message> searchInRoom(@Param("roomId") Long roomId, @Param("keyword") String keyword, @Param("userId") Long userId);
 
     @Query("SELECT COUNT(m) FROM Message m WHERE m.roomId = :roomId AND m.sentAt > :after AND m.senderId != :userId AND m.isDeleted = false")
     long countUnreadMessages(@Param("roomId") Long roomId, @Param("after") LocalDateTime after,

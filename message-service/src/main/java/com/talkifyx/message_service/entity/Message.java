@@ -45,6 +45,12 @@ public class Message {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "message_deleted_for", joinColumns = @JoinColumn(name = "message_id"))
+    @Column(name = "user_id")
+    @Builder.Default
+    private java.util.Set<Long> deletedForUsers = new java.util.HashSet<>();
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private DeliveryStatus deliveryStatus = DeliveryStatus.SENT;

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -121,9 +122,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public PagedResponse<MessageResponse> getMessagesByRoom(Long roomId, int page, int size) {
+    public PagedResponse<MessageResponse> getMessagesByRoom(Long roomId, int page, int size, Long userId) {
         Page<Message> result = messageRepository
-                .findByRoomIdAndIsDeletedFalseOrderBySentAtDesc(roomId, PageRequest.of(page, size));
+                .findVisibleMessagesByRoomId(roomId, userId, PageRequest.of(page, size));
         return PagedResponse.<MessageResponse>builder()
                 .content(result.getContent().stream().map(this::toResponse).toList())
                 .page(result.getNumber())
@@ -135,8 +136,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> getMessagesBefore(Long roomId, LocalDateTime before) {
-        return messageRepository.findByRoomIdAndSentAtBefore(roomId, before)
+    public List<MessageResponse> getMessagesBefore(Long roomId, LocalDateTime before, Long userId) {
+        return messageRepository.findVisibleMessagesByRoomIdAndSentAtBefore(roomId, before, userId)
                 .stream().map(this::toResponse).toList();
     }
 
@@ -155,19 +156,28 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void deleteMessage(String messageId, Long senderId) {
+    @Transactional
+    public void deleteMessage(String messageId, Long senderId, String deleteType) {
         Message m = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
 
-        if (!m.getSenderId().equals(senderId))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your message");
-
-        messageRepository.delete(m);
+        if ("ME".equalsIgnoreCase(deleteType)) {
+            m.getDeletedForUsers().add(senderId);
+            messageRepository.save(m);
+        } else {
+            // Delete for EVERYONE
+            if (!m.getSenderId().equals(senderId))
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your message");
+            m.setDeleted(true);
+            m.setContent("This message was deleted");
+            m.setMediaUrl(null);
+            messageRepository.save(m);
+        }
     }
 
     @Override
-    public List<MessageResponse> searchMessages(Long roomId, String keyword) {
-        return messageRepository.searchInRoom(roomId, keyword)
+    public List<MessageResponse> searchMessages(Long roomId, String keyword, Long userId) {
+        return messageRepository.searchInRoom(roomId, keyword, userId)
                 .stream().map(this::toResponse).toList();
     }
 
@@ -190,8 +200,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> getMessagesSentAtAfter(Long roomId, LocalDateTime after) {
-        return messageRepository.findByRoomIdAndSentAtAfter(roomId, after)
+    public List<MessageResponse> getMessagesSentAtAfter(Long roomId, LocalDateTime after, Long userId) {
+        return messageRepository.findVisibleMessagesByRoomIdAndSentAtAfter(roomId, after, userId)
                 .stream().map(this::toResponse).toList();
     }
 

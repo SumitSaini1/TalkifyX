@@ -17,7 +17,7 @@ public interface MessageServiceClient {
     Object editMessage(@PathVariable("messageId") String messageId, @RequestParam("content") String content);
 
     @DeleteMapping("/api/messages/{messageId}")
-    void deleteMessage(@PathVariable("messageId") String messageId);
+    void deleteMessage(@PathVariable("messageId") String messageId, @RequestHeader("X-User-Id") Long userId, @RequestParam(value = "type", defaultValue = "EVERYONE") String deleteType);
 
     @PutMapping("/api/messages/{messageId}/status")
     void updateStatus(@PathVariable("messageId") String messageId, @RequestParam("status") String status);

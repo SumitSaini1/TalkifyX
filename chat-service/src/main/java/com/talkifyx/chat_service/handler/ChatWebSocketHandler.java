@@ -130,8 +130,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private void handleMessageDelete(ChatPayload payload, Long userId) {
-        messageServiceClient.deleteMessage(payload.getDeletedId());
-        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        String deleteType = payload.getDeleteType() != null ? payload.getDeleteType() : "EVERYONE";
+        messageServiceClient.deleteMessage(payload.getDeletedId(), userId, deleteType);
+        
+        if ("ME".equalsIgnoreCase(deleteType)) {
+            messagingTemplate.convertAndSend("/topic/user/" + userId, payload);
+        } else {
+            messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        }
     }
 
     @Override

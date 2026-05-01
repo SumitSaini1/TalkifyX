@@ -129,8 +129,14 @@ public class ChatStompController {
     public void deleteMessage(@Payload ChatPayload payload,
             @Header("X-User-Id") String userId) {
         payload.setSenderId(Long.parseLong(userId));
-        // Frontend already called HTTP API to delete. Just broadcast to room.
-        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        String deleteType = payload.getDeleteType() != null ? payload.getDeleteType() : "EVERYONE";
+        
+        // Frontend already called HTTP API to delete. Just broadcast to room/user.
+        if ("ME".equalsIgnoreCase(deleteType)) {
+            messagingTemplate.convertAndSend("/topic/user/" + userId, payload);
+        } else {
+            messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
+        }
     }
 
     @MessageMapping("/chat.read")
