@@ -25,11 +25,6 @@ spring:
           predicates:
             - Path=/oauth2/**, /login/**
 
-        - id: auth-swagger
-          uri: lb://AUTH-SERVICE
-          predicates:
-            - Path=/swagger-ui/**, /v3/api-docs/**
-
         - id: room-service
           uri: lb://ROOM-SERVICE
           predicates:
@@ -64,6 +59,11 @@ spring:
             - Path=/api/notifications/**
           filters:
             - JwtAuthFilter
+
+        - id: chat-service-swagger
+          uri: lb://CHAT-SERVICE
+          predicates:
+            - Path=/ws/v3/api-docs/**
 
         - id: chat-service
           uri: lb:ws://CHAT-SERVICE
@@ -117,6 +117,8 @@ springdoc:
         url: /api/media/v3/api-docs
       - name: notification-service
         url: /api/notifications/v3/api-docs
+      - name: chat-service
+        url: /ws/v3/api-docs
 
 logging:
   level:
