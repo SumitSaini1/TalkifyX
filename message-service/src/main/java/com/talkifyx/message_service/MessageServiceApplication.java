@@ -13,14 +13,10 @@ public class MessageServiceApplication {
     public static void main(String[] args) {
 
         Dotenv dotenv = Dotenv.configure()
-				.directory("./message-service")
                 .ignoreIfMissing()
                 .load();
 
-        System.setProperty("DB_USERNAME", dotenv.get("DB_USERNAME"));
-        System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
-      
-        System.setProperty("EUREKA_URL", dotenv.get("EUREKA_URL"));
+        dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
 
         SpringApplication.run(MessageServiceApplication.class, args);
     }

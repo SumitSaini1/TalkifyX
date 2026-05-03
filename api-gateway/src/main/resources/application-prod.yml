@@ -4,7 +4,15 @@ server:
 spring:
   cloud:
     gateway:
+      httpclient:
+        websocket:
+          max-frame-payload-length: 65536
+
       routes:
+        - id: auth-internal
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/internal/**
         - id: auth-service
           uri: lb://AUTH-SERVICE
           predicates:
@@ -16,7 +24,6 @@ spring:
           uri: lb://AUTH-SERVICE
           predicates:
             - Path=/oauth2/**, /login/**
-
 
         - id: room-service
           uri: lb://ROOM-SERVICE
@@ -59,20 +66,19 @@ spring:
             - Path=/ws/v3/api-docs/**
 
         - id: chat-service
-          uri: lb://CHAT-SERVICE
+          uri: lb:ws://CHAT-SERVICE
           predicates:
             - Path=/ws/**
-          
           metadata:
             response-timeout: 0
             connect-timeout: 0
 
-      
       globalcors:
         corsConfigurations:
-          '[/**]':
+          "[/**]":
             allowedOrigins:
               - "http://localhost:4200"
+              - "http://${EC2_PUBLIC_IP}:4200"
             allowedMethods:
               - GET
               - POST
@@ -81,21 +87,20 @@ spring:
               - OPTIONS
             allowedHeaders:
               - "*"
+            exposedHeaders:
+              - "Authorization"
             allowCredentials: true
 
-     
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URL}
+      defaultZone: ${EUREKA_URL:http://eureka-server:8761/eureka}
   instance:
-    prefer-ip-address: false
-    instance-id: ${spring.application.name}:${server.port}
-    
+    prefer-ip-address: true
+
 springdoc:
   swagger-ui:
     enabled: true
@@ -115,6 +120,10 @@ springdoc:
         url: /api/notifications/v3/api-docs
       - name: chat-service
         url: /ws/v3/api-docs
+
 logging:
   level:
     root: WARN
+    reactor.netty.http.client: WARN
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN

@@ -13,7 +13,8 @@ public class NotificationServiceApplication {
 
         try {
             Dotenv dotenv = Dotenv.configure()
-                    .directory("./notification-service")
+                    // .directory("./notification-service")
+                    .directory("./")
                     .ignoreIfMissing()
                     .ignoreIfMalformed()
                     .load();
