@@ -45,7 +45,8 @@ public class ChatStompController {
                 com.talkifyx.chat_service.payload.MessageRequest.builder()
                         .roomId(payload.getRoomId())
                         .content(payload.getContent())
-                        .type("TEXT")
+                        .type(payload.getMessageType() != null ? payload.getMessageType() : "TEXT")
+                        .mediaUrl(payload.getMediaUrl())
                         .replyToMessageId(payload.getReplyToId())   // ← correct mapping!
                         .senderName(payload.getSenderName())
                         .senderAvatar(payload.getSenderAvatar())
@@ -137,6 +138,23 @@ public class ChatStompController {
         } else {
             messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), payload);
         }
+    }
+
+    @MessageMapping("/chat.react")
+    public void reactToMessage(@Payload ChatPayload payload,
+            @Header("X-User-Id") String userId) {
+        payload.setSenderId(Long.parseLong(userId));
+        // Save reaction in message-service and get back updated groups
+        Object updatedReactions = messageServiceClient.reactToMessage(
+                payload.getMessageId(), Long.parseLong(userId), payload.getEmoji());
+        // Broadcast to room with updated reactions
+        Map<String, Object> event = Map.of(
+                "eventType", "REACTION",
+                "messageId", payload.getMessageId(),
+                "roomId", payload.getRoomId(),
+                "reactions", updatedReactions != null ? updatedReactions : java.util.List.of()
+        );
+        messagingTemplate.convertAndSend("/topic/room/" + payload.getRoomId(), event);
     }
 
     @MessageMapping("/chat.read")

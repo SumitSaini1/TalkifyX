@@ -107,4 +107,12 @@ public class MessageResource {
         messageService.markRoomMessagesRead(roomId, userId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{messageId}/react")
+    public ResponseEntity<List<com.talkifyx.message_service.dto.ReactionGroupDto>> react(
+            @PathVariable("messageId") String messageId,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam("emoji") String emoji) {
+        return ResponseEntity.ok(messageService.reactToMessage(messageId, userId, emoji));
+    }
 }

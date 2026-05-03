@@ -22,6 +22,11 @@ public interface MessageServiceClient {
     @PutMapping("/api/messages/{messageId}/status")
     void updateStatus(@PathVariable("messageId") String messageId, @RequestParam("status") String status);
 
+    @PostMapping("/api/messages/{messageId}/react")
+    Object reactToMessage(@PathVariable("messageId") String messageId,
+                          @RequestHeader("X-User-Id") Long userId,
+                          @RequestParam("emoji") String emoji);
+
     @PutMapping("/api/messages/room/{roomId}/mark-read")
     void markRoomRead(@PathVariable("roomId") Long roomId, @RequestHeader("X-User-Id") Long readerId);
 }

@@ -4,6 +4,7 @@ import com.talkifyx.message_service.dto.*;
 import com.talkifyx.message_service.entity.*;
 import com.talkifyx.message_service.feign.AuthServiceClient;
 import com.talkifyx.message_service.feign.RoomServiceClient;
+import com.talkifyx.message_service.repository.MessageReactionRepository;
 import com.talkifyx.message_service.repository.MessageRepository;
 import com.talkifyx.message_service.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
+    private final MessageReactionRepository reactionRepository;
     private final RoomServiceClient roomServiceClient;
     private final AuthServiceClient authServiceClient;
 
@@ -64,6 +69,9 @@ public class MessageServiceImpl implements MessageService {
             } catch (Exception ignored) {}
         }
 
+        // Build reaction groups
+        List<ReactionGroupDto> reactionGroups = buildReactionGroups(m.getMessageId());
+
         return MessageResponse.builder()
                 .messageId(m.getMessageId())
                 .roomId(m.getRoomId())
@@ -80,7 +88,21 @@ public class MessageServiceImpl implements MessageService {
                 .deliveryStatus(m.getDeliveryStatus())
                 .sentAt(m.getSentAt())
                 .editedAt(m.getEditedAt())
+                .reactions(reactionGroups)
                 .build();
+    }
+
+    private List<ReactionGroupDto> buildReactionGroups(String messageId) {
+        return reactionRepository.findByMessageId(messageId)
+                .stream()
+                .collect(Collectors.groupingBy(r -> r.getEmoji()))
+                .entrySet().stream()
+                .map(e -> ReactionGroupDto.builder()
+                        .emoji(e.getKey())
+                        .count(e.getValue().size())
+                        .userIds(e.getValue().stream().map(r -> r.getUserId()).toList())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     // @Override
@@ -208,5 +230,33 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void markRoomMessagesRead(Long roomId, Long readerId) {
         messageRepository.bulkUpdateDeliveryStatus(roomId, readerId, DeliveryStatus.READ);
+    }
+
+    @Override
+    @Transactional
+    public List<ReactionGroupDto> reactToMessage(String messageId, Long userId, String emoji) {
+        // Ensure message exists
+        messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
+
+        var existing = reactionRepository.findByMessageIdAndUserId(messageId, userId);
+        if (existing.isPresent()) {
+            if (existing.get().getEmoji().equals(emoji)) {
+                // Toggle OFF — same emoji clicked again
+                reactionRepository.deleteByMessageIdAndUserId(messageId, userId);
+            } else {
+                // Switch emoji
+                existing.get().setEmoji(emoji);
+                reactionRepository.save(existing.get());
+            }
+        } else {
+            // New reaction
+            reactionRepository.save(MessageReaction.builder()
+                    .messageId(messageId)
+                    .userId(userId)
+                    .emoji(emoji)
+                    .build());
+        }
+        return buildReactionGroups(messageId);
     }
 }
