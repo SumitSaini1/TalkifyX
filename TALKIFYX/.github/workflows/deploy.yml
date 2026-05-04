@@ -2,7 +2,7 @@ name: TalkifyX CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/Docker-Integrate]
 
 jobs:
   build-and-push:
