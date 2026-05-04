@@ -10,16 +10,10 @@ public class ApiGatewayApplication {
     public static void main(String[] args) {
 
         Dotenv dotenv = Dotenv.configure()
-                .directory("./api-gateway")
                 .ignoreIfMissing()
                 .load();
 
-        dotenv.entries().forEach(entry -> {
-            System.setProperty(entry.getKey(), entry.getValue());
-        });
-
-        System.out.println("PROFILE = " + System.getProperty("SPRING_PROFILES_ACTIVE"));
-        System.out.println("EUREKA_URL = " + System.getProperty("EUREKA_URL"));
+        dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
 
         SpringApplication.run(ApiGatewayApplication.class, args);
     }

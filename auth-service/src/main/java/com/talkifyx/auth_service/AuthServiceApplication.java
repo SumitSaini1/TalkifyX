@@ -10,21 +10,14 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableDiscoveryClient
 public class AuthServiceApplication {
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		Dotenv dotenv = Dotenv.configure()
-			.directory("./auth-service")
-				.ignoreIfMissing()
-				.load();
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .load();
 
-		dotenv.entries().forEach(entry -> {
-			System.setProperty(entry.getKey(), entry.getValue());
-		});
+        dotenv.entries().forEach(e -> System.setProperty(e.getKey(), e.getValue()));
 
-		System.out.println("JWT_SECRET = " + dotenv.get("JWT_SECRET"));
-		System.out.println("PROFILE = " + System.getProperty("SPRING_PROFILES_ACTIVE"));
-		System.out.println("MAIL = " + System.getProperty("MAIL_USERNAME"));
-
-		SpringApplication.run(AuthServiceApplication.class, args);
-	}
+        SpringApplication.run(AuthServiceApplication.class, args);
+    }
 }

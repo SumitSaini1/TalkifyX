@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.talkifyx.message_service.dto.ApiResponse;
 import com.talkifyx.message_service.dto.SenderDto;
 
-@FeignClient(name = "auth-service", url = "${auth.service.url:http://localhost:8081}")
+@FeignClient(name = "AUTH-SERVICE")
 public interface AuthServiceClient {
     @GetMapping("/api/auth/internal/user/{id}")
     ApiResponse<SenderDto> getUserById(@PathVariable("id") Long id);

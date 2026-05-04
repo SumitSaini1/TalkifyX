@@ -1,0 +1,15 @@
+CREATE DATABASE IF NOT EXISTS auth_db;
+CREATE DATABASE IF NOT EXISTS room_db;
+CREATE DATABASE IF NOT EXISTS message_db;
+CREATE DATABASE IF NOT EXISTS presence_db;
+CREATE DATABASE IF NOT EXISTS media_db;
+CREATE DATABASE IF NOT EXISTS notification_db;
+
+GRANT ALL PRIVILEGES ON auth_db.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON room_db.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON message_db.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON presence_db.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON media_db.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON notification_db.* TO 'root'@'%';
+
+FLUSH PRIVILEGES;

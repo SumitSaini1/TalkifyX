@@ -5,10 +5,9 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "chat-service")
+@FeignClient(name = "CHAT-SERVICE")
 public interface ChatNotifyClient {
 
     @PostMapping("/api/ws/notify/presence")
     void notifyPresence(@RequestBody PresenceResponse payload);
 }
-
