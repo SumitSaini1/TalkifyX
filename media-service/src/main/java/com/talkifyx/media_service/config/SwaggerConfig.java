@@ -1,7 +1,11 @@
 package com.talkifyx.media_service.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +16,10 @@ public class SwaggerConfig {
         return new OpenAPI().info(new Info()
                 .title("Media Service API")
                 .version("1.0")
-                .description("TalkifyX Media/File Service"));
-    }
+                .description("TalkifyX Media/File Service")) 
+                .addSecurityItem(new SecurityRequirement().addList("Bearer"))
+            .components(new Components().addSecuritySchemes("Bearer",
+                new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                    .scheme("bearer").bearerFormat("JWT")));
+    } 
 }
