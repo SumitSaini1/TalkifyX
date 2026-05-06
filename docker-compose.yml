@@ -2,7 +2,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    #container_name: mysql
+    container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -10,7 +10,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "3307:3306"
+      - "3306:3306"
     networks:
       - talkifyx-network
     healthcheck:
@@ -21,10 +21,10 @@ services:
 
   redis:
     image: redis:7.2-alpine
-    #container_name: redis
+    container_name: redis
     restart: always
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - talkifyx-network
     healthcheck:
@@ -34,8 +34,8 @@ services:
       retries: 5
 
   eureka-server:
-    build: ./eureka-server
-    #container_name: eureka-server
+    image: sumitsaini123/talkifyx-eureka-server:latest
+    container_name: eureka-server
     restart: always
     env_file: .env
     environment:
@@ -51,8 +51,8 @@ services:
       retries: 5
 
   api-gateway:
-    build: ./api-gateway
-    #container_name: api-gateway
+    image: sumitsaini123/talkifyx-api-gateway:latest
+    container_name: api-gateway
     restart: always
     env_file: .env
     environment:
@@ -67,13 +67,14 @@ services:
       - talkifyx-network
 
   auth-service:
-    build: ./auth-service
-    #container_name: auth-service
+    image: sumitsaini123/talkifyx-auth-service:latest
+    container_name: auth-service
     restart: always
     env_file: .env
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
       EUREKA_URL: ${EUREKA_URL}
+      Frontend_URL: ${Frontend_URL}
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -92,8 +93,8 @@ services:
       - talkifyx-network
 
   room-service:
-    build: ./room-service
-    #container_name: room-service
+    image: sumitsaini123/talkifyx-room-service:latest
+    container_name: room-service
     restart: always
     env_file: .env
     environment:
@@ -113,8 +114,8 @@ services:
       - talkifyx-network
 
   message-service:
-    build: ./message-service
-    #container_name: message-service
+    image: sumitsaini123/talkifyx-message-service:latest
+    container_name: message-service
     restart: always
     env_file: .env
     environment:
@@ -134,8 +135,8 @@ services:
       - talkifyx-network
 
   chat-service:
-    build: ./chat-service
-    #container_name: chat-service
+    image: sumitsaini123/talkifyx-chat-service:latest
+    container_name: chat-service
     restart: always
     env_file: .env
     environment:
@@ -151,8 +152,8 @@ services:
       - talkifyx-network
 
   presence-service:
-    build: ./presence-service
-    #container_name: presence-service
+    image: sumitsaini123/talkifyx-presence-service:latest
+    container_name: presence-service
     restart: always
     env_file: .env
     environment:
@@ -176,8 +177,8 @@ services:
       - talkifyx-network
 
   media-service:
-    build: ./media-service
-    #container_name: media-service
+    image: sumitsaini123/talkifyx-media-service:latest
+    container_name: media-service
     restart: always
     env_file: .env
     environment:
@@ -201,8 +202,8 @@ services:
       - talkifyx-network
 
   notification-service:
-    build: ./notification-service
-    #container_name: notification-service
+    image: sumitsaini123/talkifyx-notification-service:latest
+    container_name: notification-service
     restart: always
     env_file: .env
     environment:
