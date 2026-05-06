@@ -2,7 +2,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: mysql
+    #container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis:7.2-alpine
-    container_name: redis
+    #container_name: redis
     restart: always
     ports:
       - "6380:6379"
@@ -35,7 +35,7 @@ services:
 
   eureka-server:
     build: ./eureka-server
-    container_name: eureka-server
+    #container_name: eureka-server
     restart: always
     env_file: .env
     environment:
@@ -52,7 +52,7 @@ services:
 
   api-gateway:
     build: ./api-gateway
-    container_name: api-gateway
+    #container_name: api-gateway
     restart: always
     env_file: .env
     environment:
@@ -68,7 +68,7 @@ services:
 
   auth-service:
     build: ./auth-service
-    container_name: auth-service
+    #container_name: auth-service
     restart: always
     env_file: .env
     environment:
@@ -93,7 +93,7 @@ services:
 
   room-service:
     build: ./room-service
-    container_name: room-service
+    #container_name: room-service
     restart: always
     env_file: .env
     environment:
@@ -114,7 +114,7 @@ services:
 
   message-service:
     build: ./message-service
-    container_name: message-service
+    #container_name: message-service
     restart: always
     env_file: .env
     environment:
@@ -135,7 +135,7 @@ services:
 
   chat-service:
     build: ./chat-service
-    container_name: chat-service
+    #container_name: chat-service
     restart: always
     env_file: .env
     environment:
@@ -152,7 +152,7 @@ services:
 
   presence-service:
     build: ./presence-service
-    container_name: presence-service
+    #container_name: presence-service
     restart: always
     env_file: .env
     environment:
@@ -177,7 +177,7 @@ services:
 
   media-service:
     build: ./media-service
-    container_name: media-service
+    #container_name: media-service
     restart: always
     env_file: .env
     environment:
@@ -202,7 +202,7 @@ services:
 
   notification-service:
     build: ./notification-service
-    container_name: notification-service
+    #container_name: notification-service
     restart: always
     env_file: .env
     environment:
