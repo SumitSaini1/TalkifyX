@@ -212,6 +212,9 @@ services:
       DB_HOST: mysql
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      FIREBASE_CONFIG_PATH: /app/secrets/firebase-service-account.json
+    volumes:
+      - ./secrets:/app/secrets
     ports:
       - "8088:8088"
     depends_on:
