@@ -17,7 +17,7 @@ public class UserPresence {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long presenceId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long userId;
 
     @Column(nullable = false)
