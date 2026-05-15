@@ -74,7 +74,11 @@ public class PresenceServiceImpl implements PresenceService {
                     throw new RuntimeException("Invalid session format: " + sessionId);
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Session not found and could not auto-heal: " + sessionId);
+                System.err.println("[PRESENCE] Invalid or stale session: " + sessionId);
+                return PresenceResponse.builder()
+                        .sessionId(sessionId)
+                        .status("OFFLINE")
+                        .build();
             }
         }
         
@@ -82,7 +86,7 @@ public class PresenceServiceImpl implements PresenceService {
         presence = repository.save(presence);
         cacheToRedis(presence);
         PresenceResponse response = toResponse(presence);
-        // Only notify if we had to auto-heal (status changed to ONLINE), but safe to just notify
+        
         notifyClients(response);
         return response;
     }

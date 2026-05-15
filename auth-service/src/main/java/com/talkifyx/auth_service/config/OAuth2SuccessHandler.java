@@ -18,14 +18,15 @@ import com.talkifyx.auth_service.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Value;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    
+    @Value("${app.frontend.url:http://localhost:4200}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -48,15 +49,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                     .password(encoder.encode("OAUTH_USER"))
                     .status(User.Status.ONLINE)
                     .build();
-            return userRepository.save(newUser); 
+            return userRepository.save(newUser);
         });
 
         String token = jwtUtil.generateAccessToken(user.getEmail(), user.getId());
 
         user.setLastSeenAt(LocalDateTime.now());
         userRepository.save(user);
-
-        response.sendRedirect("http://localhost:4200/oauth2/callback?token=" + token);
         
+        response.sendRedirect(frontendUrl + "/oauth2/callback?token=" + token);
+
     }
 }

@@ -18,12 +18,7 @@ public class WsNotifyController {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    /**
-     * Broadcast a NEW_ROOM event to all member user IDs.
-     * Called by room-service after createRoom().
-     *
-     * Request body: { "room": {...}, "memberIds": [1, 2, ...] }
-     */
+   
     @PostMapping("/new-room")
     public void notifyNewRoom(@RequestBody Map<String, Object> body) {
         Object room = body.get("room");
