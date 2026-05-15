@@ -28,13 +28,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/register",
                     "/api/auth/login",
                     "/api/auth/validate",
                     "/api/auth/oauth2/**",
+                    "/oauth2/**",
+                    "/login/oauth2/**",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/api/auth/internal/**",
