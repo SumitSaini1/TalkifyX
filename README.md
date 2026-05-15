@@ -351,6 +351,9 @@ https://talkifyx.duckdns.org/swagger-ui/index.html
 
 ```text
 TalkifyX/
+├── .github/  
+│ └── workflows/  
+│     ├── deploy.yml  
 ├── api-gateway/
 ├── auth-service/
 ├── chat-service/
