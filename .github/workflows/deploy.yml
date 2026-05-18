@@ -1,0 +1,85 @@
+name: TalkifyX CI/CD
+
+on:
+  push:
+    branches: [feat/Production-Ready]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push eureka-server
+        uses: docker/build-push-action@v5
+        with:
+          context: ./eureka-server
+          push: true
+          tags: sumitsaini123/talkifyx-eureka-server:latest
+
+      - name: Build and push api-gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-gateway
+          push: true
+          tags: sumitsaini123/talkifyx-api-gateway:latest
+
+      - name: Build and push auth-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth-service
+          push: true
+          tags: sumitsaini123/talkifyx-auth-service:latest
+
+      - name: Build and push room-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./room-service
+          push: true
+          tags: sumitsaini123/talkifyx-room-service:latest
+
+      - name: Build and push message-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./message-service
+          push: true
+          tags: sumitsaini123/talkifyx-message-service:latest
+
+      - name: Build and push chat-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./chat-service
+          push: true
+          tags: sumitsaini123/talkifyx-chat-service:latest
+
+      - name: Build and push presence-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./presence-service
+          push: true
+          tags: sumitsaini123/talkifyx-presence-service:latest
+
+      - name: Build and push media-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./media-service
+          push: true
+          tags: sumitsaini123/talkifyx-media-service:latest
+
+      - name: Build and push notification-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./notification-service
+          push: true
+          tags: sumitsaini123/talkifyx-notification-service:latest
+
+      - name: All services built and pushed successfully
+        run: echo "All Docker images pushed to DockerHub successfully!"
