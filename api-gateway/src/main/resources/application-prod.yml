@@ -80,6 +80,7 @@ spring:
               - "http://localhost:4200"
               - "http://${EC2_PUBLIC_IP}:4200"
               - "https://d9idsjwmol8t5.cloudfront.net"
+              - "https://talkifyx.duckdns.org"
             allowedMethods:
               - GET
               - POST
